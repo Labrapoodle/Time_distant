@@ -15,7 +15,7 @@ namespace Time
         public Form2()
         {
             InitializeComponent();
-            var bindingList = new BindingList<WeightNeckMtxPeriod>(DB.Table);
+            var bindingList = new BindingList<Configuration>(DB.Table);
             var source = new BindingSource(bindingList, null);
             dataGridView1.DataSource = source;
             dataGridView1.Columns[0].HeaderText = "Вес";
@@ -25,8 +25,7 @@ namespace Time
             foreach (DataGridViewColumn item in dataGridView1.Columns)
             {
                 item.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                item.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                //item.HeaderCell.Style.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Pixel);
+                item.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;                
                 item.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             }
             

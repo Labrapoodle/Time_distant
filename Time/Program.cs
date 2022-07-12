@@ -17,12 +17,10 @@ namespace Time
             
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            DB.GetData();
+            DB.GetConfsWithOrdinal();
+            DB.GetListOfConfigurations();
             Application.Run(new Form1());
-            /*do
-            {
-                DB.GetData();
-            } while (true);*/
+            
         }
     }
 }

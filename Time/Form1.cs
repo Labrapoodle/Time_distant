@@ -37,9 +37,9 @@ namespace Time
                     machineBL.Machine.SetNominal(nom);
                     label_main.Text = $"Машина №{machineBL.MachineN}";
 
-                    Cup(machineBL.MachineN, out double _);
+                    Plotting(machineBL.MachineN, out double _);
                     LabelColor(Machines);
-                    AllEfficiency(Machines);
+                    AllEfficiency_Label(Machines);
                     chart1.Series[0].Enabled = true;
                     chart1.Series[1].Enabled = true;
                    
@@ -54,7 +54,7 @@ namespace Time
 
         }
 
-        public void Cup(int n, out double w)
+        public void Plotting(int n, out double w)
         {
             List<double> T;
             var cm = Machines.Find(m => m.MachineN == n);
@@ -126,7 +126,7 @@ namespace Time
         }
 
 
-        private void AllEfficiency( List<MachineButtonLabel> O)
+        private void AllEfficiency_Label( List<MachineButtonLabel> O)
         {
 
             double E = 0;
@@ -225,16 +225,16 @@ namespace Time
             foreach (MachineButtonLabel Mac in Machines)
             {
                 Mac.Machine.SetPeriod(DB.RandomPeriod(Mac.MachineN + 2));
-                Mac.Machine.SetNominal(DB.RandomNominal(Mac.MachineN+2));
+                Mac.Machine.SetNominal(DB.RandomNominal(Mac.MachineN));
             }
             LabelColor(Machines);
-            AllEfficiency(Machines);
+            AllEfficiency_Label(Machines);
         }
         private void timer1_Tick(object sender, EventArgs e)
         {
             
             Refreshing(Machines);
-            Cup(CurrentMachineNumber, out double w);
+            Plotting(CurrentMachineNumber, out double w);
 
         }
 
