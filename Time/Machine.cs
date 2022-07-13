@@ -12,7 +12,7 @@ namespace Time
             private List<double> T_;
             private int k_;
             private double nominal_;
-            public Machine(byte k)
+            public Machine(int k)
             {                
                 this.k_ = k;
                            

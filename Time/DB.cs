@@ -18,7 +18,7 @@ namespace Time
         public static void GetListOfConfigurations()
         {
 
-            Table.Clear();
+            //Table.Clear();
             
 
 
@@ -60,7 +60,7 @@ namespace Time
         }
         public static void GetConfsWithOrdinal()
         {
-            TableWithOrdinals.Clear();
+            //TableWithOrdinals.Clear();
             string connectionString = "Server=192.168.0.12;Database=Planning;Password=DbSyS@dm1n;User ID=sa";
             SqlConnectionStringBuilder csb = new SqlConnectionStringBuilder();
             csb.DataSource = "192.168.0.12";
@@ -175,6 +175,11 @@ namespace Time
 
             
             var q = TableWithOrdinals.Find(p => p.ordinal == MachineN);
+            if (q == null)
+            {
+
+                return 0;
+            }
             var s = Table.Find(v=>v.MTX==q.MTX && v.NCK==q.NCK && v.WGTH==q.WGTH);
             
             return s.Nominal_Cycle_Period;

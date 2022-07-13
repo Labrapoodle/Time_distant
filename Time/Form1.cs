@@ -73,6 +73,8 @@ namespace Time
             chart1.ChartAreas[0].AxisX.Maximum = 120;
             chart1.Series[1].Points.Clear();
 
+            chart1.Series[0].Enabled = true;
+            chart1.Series[1].Enabled = true;
             double nominal = cm.Machine.GetNominal();
             T = cm.Machine.GetPeriod();
             double A = cm.Machine.AveragePeriod();
@@ -84,11 +86,25 @@ namespace Time
             }
 
             chart1.Series[1].Points.AddXY(0, nominal);  //Среднее время цикла
-            chart1.Series[1].Points.AddXY(T.Count-1, nominal);
+            chart1.Series[1].Points.AddXY(T.Count - 1, nominal);
 
             label_Mean_Period.Text = $"Среднее время цикла за период - {Math.Round(A, 2)} сек";
-            label_Nominal.Text = $"Номинальное время цикла - {Math.Round(nominal, 2)} сек";
-            label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - {100 * w}%";
+            
+
+            if (cm.Machine.GetNominal() == 0)
+            {
+                /*chart1.Series[0].Enabled = false;
+                chart1.Series[1].Enabled = false;          */      
+                label_Nominal.Text = $"Номинальное время цикла -  Не указано ";
+                label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - Не удалось вычислить";
+                //label_Mean_Period.Text = $"Среднее время цикла за период -  сек";
+            }
+            else
+            {
+                label_Nominal.Text = $"Номинальное время цикла - {Math.Round(nominal, 2)} сек";
+                label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - {100 * w}%";
+            }
+            
 
 
         }
@@ -135,14 +151,21 @@ namespace Time
             {
 
                 if (O[q].Machine.GetNominal() != 0 && O[q].Machine.AveragePeriod() != 0)
-                {
+                {   
                     u++;
                     E += 2 - O[q].Machine.AveragePeriod() / O[q].Machine.GetNominal();
 
                 }
             }
             E = (double)E / u;
-            label_All_Mean_Efficiency.Text = $"Общая средняя текущая проиводительность - {Math.Round(100 * E)}%";
+            if (Double.IsNaN(E))
+            {
+                label_All_Mean_Efficiency.Text = $"Общая средняя текущая проиводительность - Не удалось вычислить";
+            }
+            else
+            {
+                label_All_Mean_Efficiency.Text = $"Общая средняя текущая проиводительность - {Math.Round(100 * E)}%";
+            }
 
         }
 
@@ -203,12 +226,7 @@ namespace Time
             }
         }
 
-        private void TestClick(int y)
-        {
-            
-                Machines[y].SelectButton.PerformClick();
-            
-        }
+        
         private void Form1_Shown(object sender, EventArgs e)
         {
             
@@ -224,7 +242,7 @@ namespace Time
         {
             foreach (MachineButtonLabel Mac in Machines)
             {
-                Mac.Machine.SetPeriod(DB.RandomPeriod(Mac.MachineN + 2));
+                Mac.Machine.SetPeriod(DB.RandomPeriod(Mac.MachineN));
                 Mac.Machine.SetNominal(DB.RandomNominal(Mac.MachineN));
             }
             LabelColor(Machines);
