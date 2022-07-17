@@ -10,14 +10,17 @@ namespace Time
     {
         
             private List<double> T_;
-            private byte k_;
+            private int k_;
             private double nominal_;
-            public Machine(byte k)
+            public Machine(int k)
             {                
                 this.k_ = k;
                            
             }
-        
+        public List<double> GetPeriod()
+        {
+            return T_;
+        }
         public void SetPeriod(List<double> t)
         {
             /*if (T_!=null)
@@ -35,12 +38,8 @@ namespace Time
         {
             return nominal_;
         }
-            public List<double> GetPeriod()
-            {
-                
-                return T_;
-            }
-            public byte GetNumber()
+        
+            public int GetNumber()
             
             {
                 return k_;
