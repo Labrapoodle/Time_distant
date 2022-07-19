@@ -95,7 +95,7 @@ namespace Time
                 }
             }
         }
-        public static void ReturnGrid() //Заполняет в БД столбец номинальных времен
+        /*public static void ReturnGrid() //Заполняет в БД столбец номинальных времен
         {
             string connectionString = "Server=192.168.0.12;Database=PetPro;Password=DbSyS@dm1n;User ID=sa";
             SqlConnectionStringBuilder csb = new SqlConnectionStringBuilder();
@@ -122,51 +122,9 @@ namespace Time
                         t.Modified_Status = false;
                 }
                 
-                /*using (SqlCommand command2 = new SqlCommand())
-                {
-                    command2.CommandText = "CREATE #WriteNominal (Weigth NVARCHAR(max), Neck NVARCHAR(max), Matrix NVARCHAR(max), Nominal_Period DECIMAL(9))" +
-                        "";
-                    command2.Connection = connection;
-
-
-                } //2-4 занесение информации, полученной выше, и номиналльных периодов в другую таблицу
-                using (SqlCommand command3 = new SqlCommand())
-                {
-                    string insertStmt = "INSERT INTO #WriteNominal(Weight, Neck, Matrix, Nominal_Period) " +
-                    "VALUES(@WGHT, @NCK, @MTX, @NomPer)";
-                    command3.CommandText = insertStmt;
-                    command3.Connection = connection;
-
-                    command3.Parameters.Add("@WGHT");
-                    command3.Parameters.Add("@NCK");
-                    command3.Parameters.Add("@MTX");
-                    command3.Parameters.Add("@NomPer");
-
-                    foreach (Configuration item in Table)
-                    {
-                        command3.Parameters["@WGHT"].Value = item.WGTH;
-                        command3.Parameters["@NCK"].Value = item.NCK;
-                        command3.Parameters["@MTX"].Value = item.MTX;
-                        command3.Parameters["@NomPer"].Value = item.Nominal_Cycle_Period;
-                        command3.ExecuteNonQuery();
-                    }
-                }
-                using (SqlCommand command4 = new SqlCommand())
-                {
-                    command4.Connection = connection;
-                    command4.CommandText = "MERGE Target_Table_Name AS TARGET USING #WriteNominal AS SOURCE" +
-                        "ON (TARGET.Weight = SOURCE.Weight" +
-                        "AND TARGETT.Neck = SOURCE.Neck" +
-                        "AND TARGET.Matrix = SOURCE.Matrix) " +
-                        "WHEN MATCHED THEN" +
-                        " UPDATE SET" +
-                        " TARGET.Nominal_Period = SOURCE.Nominal_Period" +
-                        " WHEN NOT MATCHED THEN " +
-                        "INSERT (Weight, Neck, Matrix, Nominal_Period) VALUES(SOURCE.Weight,SOURCE.Neck,SOURCE.Matrix,SOURCE.Nominal_Period) " +
-                        " WHEN NOT MATCHED BY SOURCE THEN DELETE";
-                }*/
+               
             }
-        }
+        }*/
         
 
         public static List<double> RandomPeriod(int MachineN)

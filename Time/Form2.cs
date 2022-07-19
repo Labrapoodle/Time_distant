@@ -7,18 +7,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Data.SqlClient;
 
 namespace Time
 {
     public partial class Form2 : Form
     {
-        
-        
+
+
         public Form2()
         {
             InitializeComponent();
 
-            
+
 
             var bindingList = new BindingList<Configuration>(DB.Table);
             var source = new BindingSource(bindingList, null);
@@ -30,19 +31,19 @@ namespace Time
             foreach (DataGridViewColumn item in dataGridView1.Columns)
             {
                 item.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                item.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;                
+                item.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
                 item.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             }
             //this.FormClosed += new FormClosingEventHandler(this.Form2_Close());
-            FormClosed += Form2_FormClosed;
+            //FormClosed += Form2_FormClosed;
             this.dataGridView1.Columns[4].Visible = false;
         }
 
-        private void Form2_FormClosed(object sender, FormClosedEventArgs e)
+        /*private void Form2_FormClosed(object sender, FormClosedEventArgs e)
         {
-            
+
             DB.ReturnGrid();
-        }
+        }*/
 
         void Form2_Shown()
         {
@@ -50,6 +51,25 @@ namespace Time
 
 
         }
-        
+
+        private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            string connectionString = "Server=192.168.0.12;Database=PetPro;Password=DbSyS@dm1n;User ID=sa";
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                using (SqlCommand command17 = new SqlCommand("Update_Configuration_Nominal"))
+                {
+                    var t = DB.Table[e.RowIndex];
+                    command17.Connection = connection;
+                    command17.CommandType = System.Data.CommandType.StoredProcedure;
+                    command17.Parameters.Add("@NECK", System.Data.SqlDbType.NVarChar).Value = t.NCK;
+                    command17.Parameters.Add("@WEIGHT", System.Data.SqlDbType.Float).Value = t.WGHT;
+                    command17.Parameters.Add("@MATRIX", System.Data.SqlDbType.Int).Value = t.MTX;
+                    command17.Parameters.Add("@NOMINAL", System.Data.SqlDbType.Float).Value = t.Nominal_Cycle_Period;
+                    command17.ExecuteNonQuery();
+                }
+            }
+        }
     }
 }
