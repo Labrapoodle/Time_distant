@@ -48,7 +48,7 @@ namespace Time
                             p.WGHT = Convert.ToDouble(reader.GetValue(1));                            
                             p.NCK = reader.GetString(0);
                             p.MTX = reader.GetInt32(2);
-                            p.Nominal_Cycle_Period = reader.GetDouble(3);
+                            p.SetNominalConf(reader.GetDouble(3));
                             Table.Add(p);
                         }
                     }
@@ -107,19 +107,21 @@ namespace Time
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                foreach(Configuration c in Table)
+                foreach(var t in DB.Table) if(t.Modified_Status == true)
                 {
                     using(SqlCommand command17 = new SqlCommand("Update_Configuration_Nominal"))
                     {
                         command17.Connection = connection;
                         command17.CommandType = System.Data.CommandType.StoredProcedure;
-                        command17.Parameters.Add("@NECK", System.Data.SqlDbType.NVarChar).Value = c.NCK;
-                        command17.Parameters.Add("@WEIGHT", System.Data.SqlDbType.Float).Value = c.WGHT;
-                        command17.Parameters.Add("@MATRIX", System.Data.SqlDbType.Int).Value = c.MTX;
-                        command17.Parameters.Add("@NOMINAL", System.Data.SqlDbType.Float).Value = c.Nominal_Cycle_Period;
+                        command17.Parameters.Add("@NECK", System.Data.SqlDbType.NVarChar).Value = t.NCK;
+                        command17.Parameters.Add("@WEIGHT", System.Data.SqlDbType.Float).Value = t.WGHT;
+                        command17.Parameters.Add("@MATRIX", System.Data.SqlDbType.Int).Value = t.MTX;
+                        command17.Parameters.Add("@NOMINAL", System.Data.SqlDbType.Float).Value = t.Nominal_Cycle_Period;
                         command17.ExecuteNonQuery();
                     }
+                        t.Modified_Status = false;
                 }
+                
                 /*using (SqlCommand command2 = new SqlCommand())
                 {
                     command2.CommandText = "CREATE #WriteNominal (Weigth NVARCHAR(max), Neck NVARCHAR(max), Matrix NVARCHAR(max), Nominal_Period DECIMAL(9))" +
@@ -198,13 +200,29 @@ namespace Time
         
     }
     public class Configuration
-    {       
-        
+    {
+        private double nominal = 0;
         public double WGHT { get; set; }
         public string NCK { get; set; }
         public int MTX { get; set; }
-        public double Nominal_Cycle_Period { get; set; }
+        public double Nominal_Cycle_Period
+        {
+            get
+            {
+                return nominal;
+            }
+            set
+            {
+                nominal = value;
+                Modified_Status = true;
+            }
+        }
+        public void SetNominalConf(double O)
+        {
+            nominal = O;
+        }
         public bool Modified_Status { get; set; } = false;
+
 
     }
     public class ConfigurationWithMachineN

@@ -12,9 +12,14 @@ namespace Time
 {
     public partial class Form2 : Form
     {
+        
+        
         public Form2()
         {
             InitializeComponent();
+
+            
+
             var bindingList = new BindingList<Configuration>(DB.Table);
             var source = new BindingSource(bindingList, null);
             dataGridView1.DataSource = source;
@@ -30,6 +35,7 @@ namespace Time
             }
             //this.FormClosed += new FormClosingEventHandler(this.Form2_Close());
             FormClosed += Form2_FormClosed;
+            this.dataGridView1.Columns[4].Visible = false;
         }
 
         private void Form2_FormClosed(object sender, FormClosedEventArgs e)
