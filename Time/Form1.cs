@@ -92,12 +92,9 @@ namespace Time
             
 
             if (cm.Machine.GetNominal() == 0)
-            {
-                /*chart1.Series[0].Enabled = false;
-                chart1.Series[1].Enabled = false;          */      
+            {                         
                 label_Nominal.Text = $"Номинальное время цикла -  Не указано ";
-                label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - Не удалось вычислить";
-                //label_Mean_Period.Text = $"Среднее время цикла за период -  сек";
+                label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - Не удалось вычислить";                
             }
             else
             {
@@ -133,8 +130,7 @@ namespace Time
 
                 }
                 else
-                {
-                     
+                {                     
                     O[q].SelectButton.BackColor = DefaultBackColor;
                 }
 
@@ -213,11 +209,11 @@ namespace Time
 
 
 
-            public void SetEfficiency()
+            /*public void SetEfficiency()
             {
                 double k = Machine.AveragePeriod();
                 EfficiencyLabel.Text = k.ToString();
-            }
+            }*/
 
             public void Dispose()
             {
@@ -258,6 +254,7 @@ namespace Time
 
         private void Call_Second_Form_Click(object sender, EventArgs e)
         {
+            
             Form2 newForm = new Form2();
             newForm.Show();
         }

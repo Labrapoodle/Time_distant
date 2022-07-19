@@ -28,9 +28,16 @@ namespace Time
                 item.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;                
                 item.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             }
-            
+            //this.FormClosed += new FormClosingEventHandler(this.Form2_Close());
+            FormClosed += Form2_FormClosed;
         }
-        
+
+        private void Form2_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            
+            DB.ReturnGrid();
+        }
+
         void Form2_Shown()
         {
             dataGridView1.Width = dataGridView1.Columns.Cast<DataGridViewColumn>().Sum(x => x.Width) + (dataGridView1.RowHeadersVisible ? dataGridView1.RowHeadersWidth : 0) + 3;

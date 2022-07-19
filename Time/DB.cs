@@ -22,7 +22,7 @@ namespace Time
             
 
 
-            string connectionString = "Server=192.168.0.12;Database=Planning;Password=DbSyS@dm1n;User ID=sa";
+            string connectionString = "Server=192.168.0.12;Database=PetPro;Password=DbSyS@dm1n;User ID=sa";
             SqlConnectionStringBuilder csb = new SqlConnectionStringBuilder();
             csb.DataSource = "192.168.0.12";
             csb.InitialCatalog = "planning";
@@ -36,7 +36,7 @@ namespace Time
                 connection.Open();
                 using (SqlCommand command1 = new SqlCommand())
                 {
-                    command1.CommandText = "SELECT * FROM Sets";
+                    command1.CommandText = "SELECT * FROM Configuration_Nominal";
                     command1.Connection = connection;
                     SqlDataReader reader = command1.ExecuteReader();
 
@@ -45,9 +45,10 @@ namespace Time
                         while (reader.Read()) // построчно считываем данные
                         {
                             Configuration p = new Configuration();                            
-                            p.WGTH = Convert.ToDouble(reader.GetValue(2));                            
-                            p.NCK = reader.GetString(1);
-                            p.MTX = Convert.ToInt32(reader.GetString(3));     
+                            p.WGHT = Convert.ToDouble(reader.GetValue(1));                            
+                            p.NCK = reader.GetString(0);
+                            p.MTX = reader.GetInt32(2);
+                            p.Nominal_Cycle_Period = reader.GetDouble(3);
                             Table.Add(p);
                         }
                     }
@@ -82,7 +83,7 @@ namespace Time
                         while (reader.Read()) // построчно считываем данные
                         {
                             ConfigurationWithMachineN q = new ConfigurationWithMachineN();
-                            q.WGTH = Convert.ToDouble(reader.GetValue(1));
+                            q.WGHT = Convert.ToDouble(reader.GetValue(1));
                             q.NCK = reader.GetString(0);
                             q.MTX = Convert.ToInt32(reader.GetString(2));
                             q.startDate = reader.GetDateTime(3);
@@ -94,9 +95,9 @@ namespace Time
                 }
             }
         }
-        /*public static void ReturnGrid() //Заполняет в БД столбец номинальных времен
+        public static void ReturnGrid() //Заполняет в БД столбец номинальных времен
         {
-            string connectionString = "Server=192.168.0.12;Database=Planning;Password=DbSyS@dm1n;User ID=sa";
+            string connectionString = "Server=192.168.0.12;Database=PetPro;Password=DbSyS@dm1n;User ID=sa";
             SqlConnectionStringBuilder csb = new SqlConnectionStringBuilder();
             csb.DataSource = "192.168.0.12";
             csb.InitialCatalog = "planning";
@@ -106,17 +107,24 @@ namespace Time
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                using (SqlCommand command1 = new SqlCommand())
+                foreach(Configuration c in Table)
                 {
-
+                    using(SqlCommand command17 = new SqlCommand("Update_Configuration_Nominal"))
+                    {
+                        command17.Connection = connection;
+                        command17.CommandType = System.Data.CommandType.StoredProcedure;
+                        command17.Parameters.Add("@NECK", System.Data.SqlDbType.NVarChar).Value = c.NCK;
+                        command17.Parameters.Add("@WEIGHT", System.Data.SqlDbType.Float).Value = c.WGHT;
+                        command17.Parameters.Add("@MATRIX", System.Data.SqlDbType.Int).Value = c.MTX;
+                        command17.Parameters.Add("@NOMINAL", System.Data.SqlDbType.Float).Value = c.Nominal_Cycle_Period;
+                        command17.ExecuteNonQuery();
+                    }
                 }
-            }
-        }*/
-        /*using (SqlCommand command2 = new SqlCommand())
+                /*using (SqlCommand command2 = new SqlCommand())
                 {
                     command2.CommandText = "CREATE #WriteNominal (Weigth NVARCHAR(max), Neck NVARCHAR(max), Matrix NVARCHAR(max), Nominal_Period DECIMAL(9))" +
                         "";
-                    command2.Connection = connection;                
+                    command2.Connection = connection;
 
 
                 } //2-4 занесение информации, полученной выше, и номиналльных периодов в другую таблицу
@@ -132,7 +140,7 @@ namespace Time
                     command3.Parameters.Add("@MTX");
                     command3.Parameters.Add("@NomPer");
 
-                    foreach (WeightNeckMtxPeriod item in Table)
+                    foreach (Configuration item in Table)
                     {
                         command3.Parameters["@WGHT"].Value = item.WGTH;
                         command3.Parameters["@NCK"].Value = item.NCK;
@@ -155,6 +163,9 @@ namespace Time
                         "INSERT (Weight, Neck, Matrix, Nominal_Period) VALUES(SOURCE.Weight,SOURCE.Neck,SOURCE.Matrix,SOURCE.Nominal_Period) " +
                         " WHEN NOT MATCHED BY SOURCE THEN DELETE";
                 }*/
+            }
+        }
+        
 
         public static List<double> RandomPeriod(int MachineN)
         {
@@ -180,7 +191,7 @@ namespace Time
 
                 return 0;
             }
-            var s = Table.Find(v=>v.MTX==q.MTX && v.NCK==q.NCK && v.WGTH==q.WGTH);
+            var s = Table.Find(v=>v.MTX==q.MTX && v.NCK==q.NCK && v.WGHT==q.WGHT);
             
             return s.Nominal_Cycle_Period;
         }
@@ -189,17 +200,18 @@ namespace Time
     public class Configuration
     {       
         
-        public double WGTH { get; set; }
+        public double WGHT { get; set; }
         public string NCK { get; set; }
         public int MTX { get; set; }
         public double Nominal_Cycle_Period { get; set; }
+        public bool Modified_Status { get; set; } = false;
 
     }
     public class ConfigurationWithMachineN
     {
         public DateTime startDate { get; set; }
         public DateTime endDate { get; set; }
-        public double WGTH { get; set; }
+        public double WGHT { get; set; }
         public string NCK { get; set; }
         public int MTX { get; set; }
         public int ordinal { get; set; }
