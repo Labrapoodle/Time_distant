@@ -8,25 +8,42 @@ namespace Time
 {
     class Machine
     {
+
+        private List<double> T_;
+        private int k_;
+        private double nominal_;
+        private DateTime StartD_;
+        private DateTime EndD_;
+
+
+        public Machine(int k)
+        {
+            this.k_ = k;
+
+        }
         
-            private List<double> T_;
-            private int k_;
-            private double nominal_;
-            public Machine(int k)
-            {                
-                this.k_ = k;
-                           
-            }
+        public void SetStartDate(DateTime D)
+        {
+            StartD_ = D;
+        }
+        public DateTime GetStartDate()
+        {
+            return StartD_;
+        }
+        public void SetEndtDate(DateTime D)
+        {
+            EndD_ = D;
+        }
+        public DateTime GetEndtDate()
+        {
+            return EndD_;
+        }
         public List<double> GetPeriod()
         {
             return T_;
         }
         public void SetPeriod(List<double> t)
-        {
-            /*if (T_!=null)
-            {
-                T_.Clear();
-            }*/
+        {            
             T_ = t;
         }
         public void SetNominal(double P)
@@ -39,7 +56,7 @@ namespace Time
             return nominal_;
         }
         
-            public int GetNumber()
+        public int GetNumber()
             
             {
                 return k_;

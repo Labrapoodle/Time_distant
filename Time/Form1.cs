@@ -30,7 +30,7 @@ namespace Time
                 Machines.Add(new MachineButtonLabel(this, i, new Point(MachineButtonLabel.FirstIndentX + (i - 2) * (MachineButtonLabel.ButtonWidth + ((902 - 2 * MachineButtonLabel.FirstIndentX - (HighestWorkingMachineNumber - 1) * MachineButtonLabel.ButtonWidth) / (HighestWorkingMachineNumber - 2))), 46),
                     (machineBL) =>
                 {
-                    var nom = DB.RandomNominal(machineBL.MachineN);
+                    var nom = DB.LoadNominal(machineBL.MachineN);
                     var t = DB.RandomPeriod(machineBL.MachineN);
                     machineBL.Machine.SetPeriod(t);
                     CurrentMachineNumber = machineBL.MachineN;
@@ -67,10 +67,28 @@ namespace Time
             w = 0;
 
             chart1.Series[0].Points.Clear();
+            //chart1.Series[0].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+            //chart1.Series[1].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+
+
+            chart1.ChartAreas[0].AxisX.IntervalType = System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Days;
+            chart1.ChartAreas[0].AxisX.MinorTickMark.Enabled = false;
+
+            DateTime minDate = cm.Machine.GetStartDate();
+            DateTime maxDate = cm.Machine.GetStartDate();
+            
+            double xMin = minDate.ToOADate();
+            double xMax = maxDate.ToOADate();
+
             chart1.ChartAreas[0].AxisY.Minimum = 10;
             chart1.ChartAreas[0].AxisY.Maximum = 18;
-            chart1.ChartAreas[0].AxisX.Minimum = 0;
-            chart1.ChartAreas[0].AxisX.Maximum = 120;
+            chart1.ChartAreas[0].AxisX.Minimum = xMin;
+            chart1.ChartAreas[0].AxisX.Maximum = xMax;
+            /*chart1.ChartAreas[0].AxisX.Title = "Дата/Время";
+            chart1.ChartAreas[0].AxisX.TitleFont = new Font("Open Sans", 10, FontStyle.Bold);
+            chart1.ChartAreas[0].AxisY.Title = "Время цикла, сек";
+            chart1.ChartAreas[0].AxisY.TitleFont = new Font("Arial", 10, FontStyle.Bold);*/
+            //chart1.ChartAreas[0].AxisX.IntervalType = DateTime;
             chart1.Series[1].Points.Clear();
 
             chart1.Series[0].Enabled = true;
@@ -239,7 +257,9 @@ namespace Time
             foreach (MachineButtonLabel Mac in Machines)
             {
                 Mac.Machine.SetPeriod(DB.RandomPeriod(Mac.MachineN));
-                Mac.Machine.SetNominal(DB.RandomNominal(Mac.MachineN));
+                Mac.Machine.SetNominal(DB.LoadNominal(Mac.MachineN));
+                Mac.Machine.SetStartDate(DB.LoadStartDate(Mac.MachineN));
+                Mac.Machine.SetEndtDate(DB.LoadEndDate(Mac.MachineN));
             }
             LabelColor(Machines);
             AllEfficiency_Label(Machines);

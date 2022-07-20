@@ -45,6 +45,8 @@
             // 
             // chart1
             // 
+            this.chart1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.chart1.BorderlineColor = System.Drawing.Color.Black;
             this.chart1.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid;
             chartArea1.AxisX.Interval = 12D;
@@ -78,7 +80,7 @@
             series2.Name = "Series2";
             this.chart1.Series.Add(series1);
             this.chart1.Series.Add(series2);
-            this.chart1.Size = new System.Drawing.Size(902, 212);
+            this.chart1.Size = new System.Drawing.Size(911, 212);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
             // 
@@ -148,7 +150,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(902, 430);
+            this.ClientSize = new System.Drawing.Size(911, 430);
             this.Controls.Add(this.Call_Second_Form);
             this.Controls.Add(this.label_All_Mean_Efficiency);
             this.Controls.Add(this.label_Mean_Efficiency);

@@ -36,7 +36,7 @@ namespace Time
             }
             //this.FormClosed += new FormClosingEventHandler(this.Form2_Close());
             //FormClosed += Form2_FormClosed;
-            this.dataGridView1.Columns[4].Visible = false;
+            
         }
 
         /*private void Form2_FormClosed(object sender, FormClosedEventArgs e)

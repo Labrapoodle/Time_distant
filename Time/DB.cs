@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Configuration;
 using System.Data.SqlClient;
 
 
@@ -19,7 +15,7 @@ namespace Time
         {
 
             //Table.Clear();
-            
+
 
 
             string connectionString = "Server=192.168.0.12;Database=PetPro;Password=DbSyS@dm1n;User ID=sa";
@@ -44,11 +40,11 @@ namespace Time
                     {
                         while (reader.Read()) // построчно считываем данные
                         {
-                            Configuration p = new Configuration();                            
-                            p.WGHT = Convert.ToDouble(reader.GetValue(1));                            
+                            Configuration p = new Configuration();
+                            p.WGHT = Convert.ToDouble(reader.GetValue(1));
                             p.NCK = reader.GetString(0);
                             p.MTX = reader.GetInt32(2);
-                            p.SetNominalConf(reader.GetDouble(3));
+                            p.Nominal_Cycle_Period = reader.GetDouble(3);
                             Table.Add(p);
                         }
                     }
@@ -56,7 +52,7 @@ namespace Time
 
             }
 
-            
+
 
         }
         public static void GetConfsWithOrdinal()
@@ -88,7 +84,7 @@ namespace Time
                             q.MTX = Convert.ToInt32(reader.GetString(2));
                             q.startDate = reader.GetDateTime(3);
                             q.endDate = reader.GetDateTime(4);
-                            q.ordinal = (reader.GetString(5).Substring(7).StartsWith("0"))? Convert.ToInt32(reader.GetString(5).Substring(8)) : Convert.ToInt32(reader.GetString(5).Substring(7));
+                            q.ordinal = (reader.GetString(5).Substring(7).StartsWith("0")) ? Convert.ToInt32(reader.GetString(5).Substring(8)) : Convert.ToInt32(reader.GetString(5).Substring(7));
                             TableWithOrdinals.Add(q);
                         }
                     }
@@ -125,7 +121,7 @@ namespace Time
                
             }
         }*/
-        
+
 
         public static List<double> RandomPeriod(int MachineN)
         {
@@ -141,45 +137,48 @@ namespace Time
             }
             return t;
         }
-        public static double RandomNominal(int MachineN)
+        public static double LoadNominal(int MachineN)
         {
 
-            
+
             var q = TableWithOrdinals.Find(p => p.ordinal == MachineN);
             if (q == null)
             {
 
                 return 0;
             }
-            var s = Table.Find(v=>v.MTX==q.MTX && v.NCK==q.NCK && v.WGHT==q.WGHT);
-            
+            var s = Table.Find(v => v.MTX == q.MTX && v.NCK == q.NCK && v.WGHT == q.WGHT);
+
             return s.Nominal_Cycle_Period;
         }
-        
+        public static DateTime LoadStartDate(int MachineN)
+        {
+            var q = TableWithOrdinals.Find(p => p.ordinal == MachineN);
+            if (q == null)
+            {
+                return DateTime.MinValue;
+            }
+
+            return q.startDate;
+        }
+        public static DateTime LoadEndDate(int MachineN)
+        {
+            var q = TableWithOrdinals.Find(p => p.ordinal == MachineN);
+            if (q == null)
+            {
+                return DateTime.MinValue;
+            }
+            return q.endDate;
+        }
     }
     public class Configuration
     {
-        private double nominal = 0;
         public double WGHT { get; set; }
         public string NCK { get; set; }
         public int MTX { get; set; }
-        public double Nominal_Cycle_Period
-        {
-            get
-            {
-                return nominal;
-            }
-            set
-            {
-                nominal = value;
-                Modified_Status = true;
-            }
-        }
-        public void SetNominalConf(double O)
-        {
-            nominal = O;
-        }
-        public bool Modified_Status { get; set; } = false;
+        public double Nominal_Cycle_Period { get; set; }
+
+
 
 
     }
