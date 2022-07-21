@@ -67,28 +67,10 @@ namespace Time
             w = 0;
 
             chart1.Series[0].Points.Clear();
-            chart1.Series[0].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
-            chart1.Series[1].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
-            
 
-            chart1.ChartAreas[0].AxisX.MinorTickMark.IntervalType = System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Auto;
-            
-            chart1.ChartAreas[0].AxisX.MinorTickMark.Enabled = false;
-            chart1.ChartAreas[0].AxisX.MajorTickMark.Enabled = true;
-            
-            chart1.ChartAreas[0].AxisY.Minimum = 10;
-            chart1.ChartAreas[0].AxisY.Maximum = 18;
-            
 
-            
-            //chart1.ChartAreas[0].AxisX.Minimum = cm.Machine.GetStartDate().ToOADate();
-            //chart1.ChartAreas[0].AxisX.Maximum = cm.Machine.GetEndtDate().ToOADate();
-            //chart1.ChartAreas[0].AxisX.Title = "Дата/Время";
-            //chart1.ChartAreas[0].AxisX.TitleFont = new Font("Open Sans", 10, FontStyle.Bold);
-            //chart1.ChartAreas[0].AxisY.Title = "Время цикла, сек";
-            //chart1.ChartAreas[0].AxisY.TitleFont = new Font("Arial", 10, FontStyle.Bold);
 
-            chart1.ChartAreas[0].AxisX.LabelStyle.Interval = 24;
+           
             
             chart1.Series[1].Points.Clear();
             chart1.Series[0].Enabled = true;
@@ -102,7 +84,7 @@ namespace Time
 
             var startDate = cm.Machine.GetStartDate();
 
-            for (int i = 0; i < 119; i++)    //График времён циклов
+            for (int i = 0; i < 120; i++)    //График времён циклов
             {
                 
                 chart1.Series[0].Points.AddXY(startDate.AddHours(i).ToString(), T[i]);
@@ -283,6 +265,8 @@ namespace Time
             Form2 newForm = new Form2();
             newForm.Show();
         }
+
+        
     }
 
 
