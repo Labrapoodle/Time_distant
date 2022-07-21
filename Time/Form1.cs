@@ -67,47 +67,52 @@ namespace Time
             w = 0;
 
             chart1.Series[0].Points.Clear();
-            //chart1.Series[0].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
-            //chart1.Series[1].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
-
-
-            chart1.ChartAreas[0].AxisX.IntervalType = System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Days;
-            chart1.ChartAreas[0].AxisX.MinorTickMark.Enabled = false;
-
-            DateTime minDate = cm.Machine.GetStartDate();
-            DateTime maxDate = cm.Machine.GetStartDate();
+            chart1.Series[0].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+            chart1.Series[1].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
             
-            double xMin = minDate.ToOADate();
-            double xMax = maxDate.ToOADate();
 
+            chart1.ChartAreas[0].AxisX.MinorTickMark.IntervalType = System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Auto;
+            
+            chart1.ChartAreas[0].AxisX.MinorTickMark.Enabled = false;
+            chart1.ChartAreas[0].AxisX.MajorTickMark.Enabled = true;
+            
             chart1.ChartAreas[0].AxisY.Minimum = 10;
             chart1.ChartAreas[0].AxisY.Maximum = 18;
-            chart1.ChartAreas[0].AxisX.Minimum = xMin;
-            chart1.ChartAreas[0].AxisX.Maximum = xMax;
-            /*chart1.ChartAreas[0].AxisX.Title = "Дата/Время";
-            chart1.ChartAreas[0].AxisX.TitleFont = new Font("Open Sans", 10, FontStyle.Bold);
-            chart1.ChartAreas[0].AxisY.Title = "Время цикла, сек";
-            chart1.ChartAreas[0].AxisY.TitleFont = new Font("Arial", 10, FontStyle.Bold);*/
-            //chart1.ChartAreas[0].AxisX.IntervalType = DateTime;
-            chart1.Series[1].Points.Clear();
+            
 
+            
+            //chart1.ChartAreas[0].AxisX.Minimum = cm.Machine.GetStartDate().ToOADate();
+            //chart1.ChartAreas[0].AxisX.Maximum = cm.Machine.GetEndtDate().ToOADate();
+            //chart1.ChartAreas[0].AxisX.Title = "Дата/Время";
+            //chart1.ChartAreas[0].AxisX.TitleFont = new Font("Open Sans", 10, FontStyle.Bold);
+            //chart1.ChartAreas[0].AxisY.Title = "Время цикла, сек";
+            //chart1.ChartAreas[0].AxisY.TitleFont = new Font("Arial", 10, FontStyle.Bold);
+
+            chart1.ChartAreas[0].AxisX.LabelStyle.Interval = 24;
+            
+            chart1.Series[1].Points.Clear();
             chart1.Series[0].Enabled = true;
             chart1.Series[1].Enabled = true;
+
+
             double nominal = cm.Machine.GetNominal();
             T = cm.Machine.GetPeriod();
             double A = cm.Machine.AveragePeriod();
             w = Math.Round(2 - A / nominal, 2);
 
-            for (int i = 0; i < T.Count; i++)    //График времён циклов
+            var startDate = cm.Machine.GetStartDate();
+
+            for (int i = 0; i < 119; i++)    //График времён циклов
             {
-                chart1.Series[0].Points.AddXY(i, T[i]);
+                
+                chart1.Series[0].Points.AddXY(startDate.AddHours(i).ToString(), T[i]);
+                chart1.Series[1].Points.AddXY(startDate.AddHours(i).ToString(), nominal);  //Среднее время цикла
+                
             }
-
-            chart1.Series[1].Points.AddXY(0, nominal);  //Среднее время цикла
-            chart1.Series[1].Points.AddXY(T.Count - 1, nominal);
-
-            label_Mean_Period.Text = $"Среднее время цикла за период - {Math.Round(A, 2)} сек";
             
+            
+            
+            label_Mean_Period.Text = $"Среднее время цикла за период - {Math.Round(A, 2)} сек";            
 
             if (cm.Machine.GetNominal() == 0)
             {                         

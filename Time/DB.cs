@@ -156,7 +156,8 @@ namespace Time
             var q = TableWithOrdinals.Find(p => p.ordinal == MachineN);
             if (q == null)
             {
-                return DateTime.MinValue;
+                DateTime d = new DateTime(2001, 11, 09);
+                return d;
             }
 
             return q.startDate;
@@ -166,7 +167,8 @@ namespace Time
             var q = TableWithOrdinals.Find(p => p.ordinal == MachineN);
             if (q == null)
             {
-                return DateTime.MinValue;
+                DateTime d = new DateTime(2001, 11, 09);
+                return d;
             }
             return q.endDate;
         }
