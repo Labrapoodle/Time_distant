@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 
+
 namespace Time
 {
 
@@ -31,7 +32,7 @@ namespace Time
                     (machineBL) =>
                 {
                     var nom = DB.LoadNominal(machineBL.MachineN);
-                    var t = DB.RandomPeriod(machineBL.MachineN);
+                    var t = DB.GetCycleIntervals_Start(machineBL.MachineN);
                     machineBL.Machine.SetPeriod(t);
                     CurrentMachineNumber = machineBL.MachineN;
                     machineBL.Machine.SetNominal(nom);
@@ -56,7 +57,7 @@ namespace Time
 
         public void Plotting(int n, out double w)
         {
-            List<double> T;
+            List<(DateTime,double)> T;
             var cm = Machines.Find(m => m.MachineN == n);
             if (cm == null)
             {
@@ -67,11 +68,16 @@ namespace Time
             w = 0;
 
             chart1.Series[0].Points.Clear();
+            chart1.ChartAreas[0].AxisX.LabelStyle.Format = "HH:mm";
+            chart1.ChartAreas[0].AxisX.LabelStyle.Interval = 2;
+            //chart1.ChartAreas[0].AxisX.CustomLabels.Add(cm.Machine.GetStartDate().ToOADate(),cm.Machine.GetStartDate().AddDays(1).ToOADate(),cm.Machine.GetStartDate().ToString(),1,System.Windows.Forms.DataVisualization.Charting.LabelMarkStyle.LineSideMark );
+            chart1.ChartAreas[0].AxisX.CustomLabels.Add(1,System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Days,cm.Machine.GetStartDate().ToOADate(),cm.Machine.GetEndtDate().ToOADate(),"dd-MM-yyyy",1,System.Windows.Forms.DataVisualization.Charting.LabelMarkStyle.SideMark);
+            chart1.ChartAreas[0].AxisX.Title = "Дата/Время";
+            chart1.ChartAreas[0].AxisY.Title = "Время цикла, сек";
 
 
-
-           
-            
+            chart1.ChartAreas[0].AxisX.Minimum = cm.Machine.GetStartDate().ToOADate();
+            chart1.ChartAreas[0].AxisX.Maximum = cm.Machine.GetEndtDate().ToOADate();
             chart1.Series[1].Points.Clear();
             chart1.Series[0].Enabled = true;
             chart1.Series[1].Enabled = true;
@@ -84,16 +90,21 @@ namespace Time
 
             var startDate = cm.Machine.GetStartDate();
 
-            for (int i = 0; i < 120; i++)    //График времён циклов
+            for (int i = 0; i < T.Count; i++)    //График времён циклов
             {
                 
-                chart1.Series[0].Points.AddXY(startDate.AddHours(i).ToString(), T[i]);
-                chart1.Series[1].Points.AddXY(startDate.AddHours(i).ToString(), nominal);  //Среднее время цикла
+                //chart1.Series[0].Points.AddXY(startDate.AddHours(i).ToString(), T[i]);
+                //chart1.Series[1].Points.AddXY(startDate.AddHours(i).ToString(), nominal);  //Среднее время цикла
+                chart1.Series[0].Points.AddXY(T[i].Item1.ToOADate(), T[i].Item2);
                 
+
             }
-            
-            
-            
+            chart1.Series[1].Points.AddXY(cm.Machine.GetStartDate().ToOADate(), nominal);
+            chart1.Series[1].Points.AddXY(cm.Machine.GetEndtDate().ToOADate(), nominal);
+
+
+
+
             label_Mean_Period.Text = $"Среднее время цикла за период - {Math.Round(A, 2)} сек";            
 
             if (cm.Machine.GetNominal() == 0)
@@ -120,7 +131,7 @@ namespace Time
 
             for (int q = 0; q < HighestWorkingMachineNumber - 1; q++)
             {
-                if (O[q].Machine.GetNominal() != 0)
+                if (O[q].Machine.GetNominal() != 0 && O[q].Machine.AveragePeriod() != 0)
                 {
                     w = 2 - O[q].Machine.AveragePeriod() / O[q].Machine.GetNominal();
                     if (w >= 0.95) O[q].SelectButton.BackColor = Color.Green;
@@ -243,7 +254,7 @@ namespace Time
         {
             foreach (MachineButtonLabel Mac in Machines)
             {
-                Mac.Machine.SetPeriod(DB.RandomPeriod(Mac.MachineN));
+                Mac.Machine.SetPeriod(DB.GetCycleIntervals_Start(Mac.MachineN));
                 Mac.Machine.SetNominal(DB.LoadNominal(Mac.MachineN));
                 Mac.Machine.SetStartDate(DB.LoadStartDate(Mac.MachineN));
                 Mac.Machine.SetEndtDate(DB.LoadEndDate(Mac.MachineN));

@@ -9,7 +9,7 @@ namespace Time
     class Machine
     {
 
-        private List<double> T_;
+        private List<(DateTime,double)> T_;
         private int k_;
         private double nominal_;
         private DateTime StartD_;
@@ -38,11 +38,11 @@ namespace Time
         {
             return EndD_;
         }
-        public List<double> GetPeriod()
+        public List<(DateTime, double)> GetPeriod()
         {
             return T_;
         }
-        public void SetPeriod(List<double> t)
+        public void SetPeriod(List<(DateTime, double)> t)
         {            
             T_ = t;
         }
@@ -63,15 +63,16 @@ namespace Time
             }
         public double AveragePeriod()
         {
-            double l = new double();
-            if (!(T_ == null))
+            List<double> V =  T_.Select(l => l.Item2).ToList();
+            double p = new double();
+            if (T_ != null && T_.Count>0)
             {
-                l = T_.Where(x => !(Double.IsNaN(x))).Average();
+                p = V.Where(x => !(Double.IsNaN(x))).Average();
 
                
 
             }
-            return l;
+            return p;
             /*private double Efficiency()
             {
                 return 0;
