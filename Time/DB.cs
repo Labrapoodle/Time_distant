@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-
+using System.Windows.Forms;
 
 namespace Time
 {
@@ -20,16 +20,10 @@ namespace Time
 
 
             string connectionString = "Server=192.168.0.12;Database=PetPro;Password=DbSyS@dm1n;User ID=sa";
-            SqlConnectionStringBuilder csb = new SqlConnectionStringBuilder();
-            csb.DataSource = "192.168.0.12";
-            csb.InitialCatalog = "planning";
-            csb.UserID = "sa";
-            csb.Password = "DbSyS@dm1n";
+
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-
-
                 connection.Open();
                 using (SqlCommand command1 = new SqlCommand())
                 {
@@ -60,11 +54,7 @@ namespace Time
         {
             //TableWithOrdinals.Clear();
             string connectionString = "Server=192.168.0.12;Database=Planning;Password=DbSyS@dm1n;User ID=sa";
-            SqlConnectionStringBuilder csb = new SqlConnectionStringBuilder();
-            csb.DataSource = "192.168.0.12";
-            csb.InitialCatalog = "planning";
-            csb.UserID = "sa";
-            csb.Password = "DbSyS@dm1n";
+           
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -162,9 +152,42 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
         }
         public static double LoadNominal(int MachineN)
         {
+            Tuple<string,double,int>  t = new Tuple<string, double, int> ("",0,0);
+            
+            string connectionString = "Server=192.168.0.12;Database=Planning;Password=DbSyS@dm1n;User ID=sa";
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.CommandText = @"SELECT DISTINCT Sets.neck,Sets.weight,Sets.matrix,planOrders.startDate,planOrders.endDate,planOrders.petLine"+
+                        "FROM Sets LEFT JOIN planOrders ON (Sets.neck=planOrders.neck AND Sets.weight=planOrders.weight AND Sets.matrix=planOrders.matrix)"+
+                        "WHERE (GETDATE() BETWEEN startDate AND endDAte) AND (petLine = @LineNumber)";
+                    command.Connection = connection;
+                    command.Parameters.Add("LineNumber", System.Data.SqlDbType.NVarChar).Value = "PETLINE"+MachineN.ToString("D2");
+                    SqlDataReader reader = command.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read()  )
+                        {
+                            t = Tuple.Create(reader.GetString(0), reader.GetDouble(2), reader.GetInt32(2));
+                            
+                        }
+                    }
+                }
+                var x = Table.Find(c => c.NCK == t.Item1 && c.WGHT == t.Item2 && c.MTX == t.Item3);
+                if (x == null)
+                {
+                    MessageBox.Show("DB,179");
+                    return 0;
+                }
+                else
+                {
+                    return x.Nominal_Cycle_Period;
+                }
+            }
 
-
-            var q = TableWithOrdinals.Find(p => p.ordinal == MachineN);
+            /*    var q = TableWithOrdinals.Find(p => p.ordinal == MachineN);
             if (q == null)
             {
 
@@ -172,7 +195,7 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
             }
             var s = Table.Find(v => v.MTX == q.MTX && v.NCK == q.NCK && v.WGHT == q.WGHT);
 
-            return s.Nominal_Cycle_Period;
+            return s.Nominal_Cycle_Period;*/
         }
         public static DateTime LoadStartDate(int MachineN)
         {

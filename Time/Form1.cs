@@ -57,6 +57,7 @@ namespace Time
 
         public void Plotting(int n, out double w)
         {
+            
             List<(DateTime,double)> T;
             var cm = Machines.Find(m => m.MachineN == n);
             if (cm == null)
@@ -72,7 +73,7 @@ namespace Time
             chart1.ChartAreas[0].AxisX.LabelStyle.Interval = 2;
             //chart1.ChartAreas[0].AxisX.CustomLabels.Add(cm.Machine.GetStartDate().ToOADate(),cm.Machine.GetStartDate().AddDays(1).ToOADate(),cm.Machine.GetStartDate().ToString(),1,System.Windows.Forms.DataVisualization.Charting.LabelMarkStyle.LineSideMark );
             chart1.ChartAreas[0].AxisX.CustomLabels.Add(1,System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Days,cm.Machine.GetStartDate().ToOADate(),cm.Machine.GetEndtDate().ToOADate(),"dd-MM-yyyy",1,System.Windows.Forms.DataVisualization.Charting.LabelMarkStyle.SideMark);
-            chart1.ChartAreas[0].AxisX.Title = "Дата/Время";
+            //chart1.ChartAreas[0].AxisX.Title = "Дата/Время";
             chart1.ChartAreas[0].AxisY.Title = "Время цикла, сек";
 
 
@@ -89,13 +90,13 @@ namespace Time
             w = Math.Round(2 - A / nominal, 2);
 
             var startDate = cm.Machine.GetStartDate();
-
-            for (int i = 0; i < T.Count; i++)    //График времён циклов
+            
+            for (int index = (cm.Machine.GetStartDate()<T[0].Item1)?0:T.FindIndex(c=>c.Item1>cm.Machine.GetStartDate()); index < T.Count; index++)    //График времён циклов
             {
                 
                 //chart1.Series[0].Points.AddXY(startDate.AddHours(i).ToString(), T[i]);
                 //chart1.Series[1].Points.AddXY(startDate.AddHours(i).ToString(), nominal);  //Среднее время цикла
-                chart1.Series[0].Points.AddXY(T[i].Item1.ToOADate(), T[i].Item2);
+                chart1.Series[0].Points.AddXY(T[index].Item1.ToOADate(), T[index].Item2);
                 
 
             }

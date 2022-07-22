@@ -62,7 +62,7 @@
             chartArea1.AxisX.MajorTickMark.IntervalType = System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Days;
             chartArea1.AxisX.MajorTickMark.Size = 3F;
             chartArea1.AxisX.MinorTickMark.Enabled = true;
-            chartArea1.AxisX.MinorTickMark.Interval = 1D;
+            chartArea1.AxisX.MinorTickMark.Interval = 2D;
             chartArea1.AxisX.MinorTickMark.IntervalType = System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Hours;
             chartArea1.AxisX2.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.False;
             chartArea1.AxisY.Interval = 1D;
@@ -71,6 +71,7 @@
             chartArea1.AxisY.Minimum = 10D;
             chartArea1.Name = "ChartArea1";
             this.chart1.ChartAreas.Add(chartArea1);
+            this.chart1.Cursor = System.Windows.Forms.Cursors.Cross;
             this.chart1.Location = new System.Drawing.Point(0, 95);
             this.chart1.Name = "chart1";
             series1.ChartArea = "ChartArea1";
@@ -158,6 +159,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(911, 430);
             this.Controls.Add(this.Call_Second_Form);
             this.Controls.Add(this.label_All_Mean_Efficiency);
