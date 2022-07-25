@@ -27,7 +27,7 @@ namespace Time
                 connection.Open();
                 using (SqlCommand command1 = new SqlCommand())
                 {
-                    command1.CommandText = "SELECT * FROM Configuration_Nominal";
+                    command1.CommandText = "SELECT * FROM Configuration_Nominal ORDER BY neck,matrix DESC,[weight] DESC";
                     command1.Connection = connection;
                     SqlDataReader reader = command1.ExecuteReader();
 
@@ -118,7 +118,7 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
             for (int j= 1; j < L.Count-1; j++)
             {
                 
-                if ((L[j].Item1 - L[j - 1].Item1).TotalHours > 1)
+                if ((L[j].Item1 - L[j - 1].Item1).TotalHours > 2)
                 {
                     //int index = L.IndexOf((L[j-1].Item1,L[j-1].Item2));
                     O.Add((L[j - 1].Item1, L[j - 1].Item2));
@@ -136,7 +136,7 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
 
             return L;
         }
-        public static List<double> RandomPeriod(int MachineN)
+        /*public static List<double> RandomPeriod(int MachineN)
         {
 
 
@@ -149,10 +149,12 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
 
             }
             return t;
-        }
+        }*/ //предыдущая версия метода DB.GetCycleIntervals_Start(int N)
         public static double LoadNominal(int MachineN)
         {
-            Tuple<string,double,int>  t = new Tuple<string, double, int> ("",0,0);
+            string RDneck ="" ;
+            double RDweight=0.1F;
+            int RDmatrix=1;
             
             string connectionString = "Server=192.168.0.12;Database=Planning;Password=DbSyS@dm1n;User ID=sa";
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -160,25 +162,24 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
                 connection.Open();
                 using (SqlCommand command = new SqlCommand())
                 {
-                    command.CommandText = @"SELECT DISTINCT Sets.neck,Sets.weight,Sets.matrix,planOrders.startDate,planOrders.endDate,planOrders.petLine"+
+                    command.CommandText = @"SELECT DISTINCT Sets.neck,Sets.weight,Sets.matrix,planOrders.startDate,planOrders.endDate,planOrders.petLine "+
                         "FROM Sets LEFT JOIN planOrders ON (Sets.neck=planOrders.neck AND Sets.weight=planOrders.weight AND Sets.matrix=planOrders.matrix)"+
                         "WHERE (GETDATE() BETWEEN startDate AND endDAte) AND (petLine = @LineNumber)";
                     command.Connection = connection;
                     command.Parameters.Add("LineNumber", System.Data.SqlDbType.NVarChar).Value = "PETLINE"+MachineN.ToString("D2");
-                    SqlDataReader reader = command.ExecuteReader();
-                    if (reader.HasRows)
+                    SqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleRow);
+                    if (reader.Read())
                     {
-                        while (reader.Read()  )
-                        {
-                            t = Tuple.Create(reader.GetString(0), reader.GetDouble(2), reader.GetInt32(2));
-                            
-                        }
+                        RDneck = reader.GetString(0);
+                        RDweight = Convert.ToDouble(reader.GetValue(1));
+                        RDmatrix = Convert.ToInt32(reader.GetString(2));
                     }
+
                 }
-                var x = Table.Find(c => c.NCK == t.Item1 && c.WGHT == t.Item2 && c.MTX == t.Item3);
+                var x = Table.Find(c => c.NCK == RDneck && c.WGHT == RDweight && c.MTX == RDmatrix);
                 if (x == null)
                 {
-                    MessageBox.Show("DB,179");
+                    //MessageBox.Show("DB,179");
                     return 0;
                 }
                 else
@@ -197,6 +198,26 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
 
             return s.Nominal_Cycle_Period;*/
         }
+        
+        /*public static void Load_StartAndEnd_Date(int MachineN)
+        {
+            string connectionString = "Server=192.168.0.12;Database=Planning;Password=DbSyS@dm1n;User ID=sa";
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.CommandText = @"SELECT DISTINCT Sets.neck,Sets.weight,Sets.matrix,planOrders.startDate,planOrders.endDate,planOrders.petLine" +
+                        "FROM Sets LEFT JOIN planOrders ON (Sets.neck=planOrders.neck AND Sets.weight=planOrders.weight AND Sets.matrix=planOrders.matrix)" +
+                        "WHERE (GETDATE() BETWEEN startDate AND endDAte) AND (petLine = @LineNumber)";
+                    command.Connection = connection;
+                    command.Parameters.Add("LineNumber", System.Data.SqlDbType.NVarChar).Value = "PETLINE" + MachineN.ToString("D2");
+                    SqlDataReader reader = command.ExecuteReader();
+                    if(reader.)
+                }
+            }
+        }*/
+        
         public static DateTime LoadStartDate(int MachineN)
         {
             var q = TableWithOrdinals.Find(p => p.ordinal == MachineN);
@@ -208,7 +229,7 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
 
             return q.startDate;
         }
-        public static DateTime LoadEndDate(int MachineN)
+        /*public static DateTime LoadEndDate(int MachineN)
         {
             var q = TableWithOrdinals.Find(p => p.ordinal == MachineN);
             if (q == null)
@@ -217,13 +238,14 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
                 return d;
             }
             return q.endDate;
-        }
+        }*/
     }
     public class Configuration
     {
-        public double WGHT { get; set; }
         public string NCK { get; set; }
         public int MTX { get; set; }
+        public double WGHT { get; set; }        
+        
         public double Nominal_Cycle_Period { get; set; }
 
 

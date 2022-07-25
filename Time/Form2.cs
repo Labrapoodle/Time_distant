@@ -19,14 +19,18 @@ namespace Time
         {
             InitializeComponent();
 
-
+            
 
             var bindingList = new BindingList<Configuration>(DB.Table);
             var source = new BindingSource(bindingList, null);
             dataGridView1.DataSource = source;
-            dataGridView1.Columns[0].HeaderText = "Вес";
-            dataGridView1.Columns[1].HeaderText = "Горло";
-            dataGridView1.Columns[2].HeaderText = "Кол-во гнезд";
+            dataGridView1.Columns[0].HeaderText = "Горло";
+            
+            dataGridView1.Columns[0].ReadOnly = true;
+            dataGridView1.Columns[1].HeaderText = "Кол-во гнёзд";
+            dataGridView1.Columns[1].ReadOnly = true;
+            dataGridView1.Columns[2].HeaderText = "Вес";
+            dataGridView1.Columns[2].ReadOnly = true;
             dataGridView1.Columns[3].HeaderText = "Время цикла";
             foreach (DataGridViewColumn item in dataGridView1.Columns)
             {

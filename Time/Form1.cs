@@ -15,9 +15,10 @@ namespace Time
 
     public partial class Form1 : Form
     {
-        static List<MachineButtonLabel> Machines = new List<MachineButtonLabel>();
+        // !!Machines[0] соответствует второй машине!! (, а Machines[12] — 14, т.е. сдвиг на два)
+        static List<MachineButtonLabel> Machines = new List<MachineButtonLabel>(); 
         static int HighestWorkingMachineNumber = 14;
-        static int CurrentMachineNumber=0;
+        static int CurrentMachineNumber=2;
         public Form1()
         {
 
@@ -37,12 +38,20 @@ namespace Time
                     CurrentMachineNumber = machineBL.MachineN;
                     machineBL.Machine.SetNominal(nom);
                     label_main.Text = $"Машина №{machineBL.MachineN}";
-
-                    Plotting(machineBL.MachineN, out double _);
-                    LabelColor(Machines);
-                    AllEfficiency_Label(Machines);
-                    chart1.Series[0].Enabled = true;
-                    chart1.Series[1].Enabled = true;
+                    if (machineBL.Machine.GetPeriod().Count == 0)
+                    {
+                        MessageBox.Show("Нет данных");
+                        
+                    }
+                    else
+                    {
+                        Plotting(machineBL.MachineN, out double _);
+                        LabelColor(Machines);
+                        AllEfficiency_Label(Machines);
+                        chart1.Series[0].Enabled = true;
+                        chart1.Series[1].Enabled = true;
+                    }
+                    
                    
                 }
                 ));
@@ -72,13 +81,15 @@ namespace Time
             chart1.ChartAreas[0].AxisX.LabelStyle.Format = "HH:mm";
             chart1.ChartAreas[0].AxisX.LabelStyle.Interval = 2;
             //chart1.ChartAreas[0].AxisX.CustomLabels.Add(cm.Machine.GetStartDate().ToOADate(),cm.Machine.GetStartDate().AddDays(1).ToOADate(),cm.Machine.GetStartDate().ToString(),1,System.Windows.Forms.DataVisualization.Charting.LabelMarkStyle.LineSideMark );
-            chart1.ChartAreas[0].AxisX.CustomLabels.Add(1,System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Days,cm.Machine.GetStartDate().ToOADate(),cm.Machine.GetEndtDate().ToOADate(),"dd-MM-yyyy",1,System.Windows.Forms.DataVisualization.Charting.LabelMarkStyle.SideMark);
+            
             //chart1.ChartAreas[0].AxisX.Title = "Дата/Время";
             chart1.ChartAreas[0].AxisY.Title = "Время цикла, сек";
 
 
-            chart1.ChartAreas[0].AxisX.Minimum = cm.Machine.GetStartDate().ToOADate();
+            chart1.ChartAreas[0].AxisX.Minimum = cm.Machine.CycleBegin.ToOADate();
             chart1.ChartAreas[0].AxisX.Maximum = cm.Machine.GetEndtDate().ToOADate();
+            chart1.ChartAreas[0].AxisY.Minimum = 10;
+            chart1.ChartAreas[0].AxisY.Maximum = 20;
             chart1.Series[1].Points.Clear();
             chart1.Series[0].Enabled = true;
             chart1.Series[1].Enabled = true;
@@ -88,20 +99,34 @@ namespace Time
             T = cm.Machine.GetPeriod();
             double A = cm.Machine.AveragePeriod();
             w = Math.Round(2 - A / nominal, 2);
-
-            var startDate = cm.Machine.GetStartDate();
+            int ondex =0;
+            if(cm.Machine.CycleBegin > T[0].Item1)
+            {
+                chart1.ChartAreas[0].AxisX.Maximum = DateTime.Now.Date.AddDays(1).ToOADate();
+                chart1.ChartAreas[0].AxisX.Minimum = DateTime.Now.Date.AddDays(-4).ToOADate();
+                /*if (T.FindIndex(c => c.Item1 >= cm.Machine.CycleBegin) == -1)
+                {
+                    MessageBox.Show("Начало пятидневки позже времнени изменения заказа, но с начала пятидневки нет данных");
+                    return;
+                }*/
+                ondex = T.FindIndex(c => c.Item1 >= DateTime.Now.AddDays(-5));
+            }
             
-            for (int index = (cm.Machine.GetStartDate()<T[0].Item1)?0:T.FindIndex(c=>c.Item1>cm.Machine.GetStartDate()); index < T.Count; index++)    //График времён циклов
+            
+
+            
+            
+            for (int b = ondex; b < T.Count; b++)    //График времён циклов
             {
                 
                 //chart1.Series[0].Points.AddXY(startDate.AddHours(i).ToString(), T[i]);
                 //chart1.Series[1].Points.AddXY(startDate.AddHours(i).ToString(), nominal);  //Среднее время цикла
-                chart1.Series[0].Points.AddXY(T[index].Item1.ToOADate(), T[index].Item2);
+                chart1.Series[0].Points.AddXY(T[b].Item1.ToOADate(), T[b].Item2);
                 
 
             }
-            chart1.Series[1].Points.AddXY(cm.Machine.GetStartDate().ToOADate(), nominal);
-            chart1.Series[1].Points.AddXY(cm.Machine.GetEndtDate().ToOADate(), nominal);
+            chart1.Series[1].Points.AddXY(chart1.ChartAreas[0].AxisX.Minimum, nominal);
+            chart1.Series[1].Points.AddXY(chart1.ChartAreas[0].AxisX.Maximum, nominal);
 
 
 
@@ -118,7 +143,7 @@ namespace Time
                 label_Nominal.Text = $"Номинальное время цикла - {Math.Round(nominal, 2)} сек";
                 label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - {100 * w}%";
             }
-            
+            chart1.ChartAreas[0].AxisX.CustomLabels.Add(1, System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Days, chart1.ChartAreas[0].AxisX.Minimum, chart1.ChartAreas[0].AxisX.Maximum, "dd-MM-yyyy", 1, System.Windows.Forms.DataVisualization.Charting.LabelMarkStyle.SideMark);
 
 
         }
@@ -257,17 +282,27 @@ namespace Time
             {
                 Mac.Machine.SetPeriod(DB.GetCycleIntervals_Start(Mac.MachineN));
                 Mac.Machine.SetNominal(DB.LoadNominal(Mac.MachineN));
-                Mac.Machine.SetStartDate(DB.LoadStartDate(Mac.MachineN));
-                Mac.Machine.SetEndtDate(DB.LoadEndDate(Mac.MachineN));
+                Mac.Machine.CycleBegin = DB.LoadStartDate(Mac.MachineN);
+                //Mac.Machine.SetEndtDate(DB.LoadEndDate(Mac.MachineN));
             }
             LabelColor(Machines);
             AllEfficiency_Label(Machines);
         }
         private void timer1_Tick(object sender, EventArgs e)
         {
-            
             Refreshing(Machines);
-            Plotting(CurrentMachineNumber, out double w);
+            if(Machines[CurrentMachineNumber - 2].Machine.GetPeriod().Count != 0)
+            {
+                DateTime Start = Machines[CurrentMachineNumber - 2].Machine.CycleBegin;
+                DateTime Change = Machines[CurrentMachineNumber - 2].Machine.GetPeriod()[0].Item1;
+
+                if (Start >= Change && Machines[CurrentMachineNumber - 2].Machine.GetPeriod().FindIndex(c => c.Item1 > Start) != -1)
+                {
+                    Plotting(CurrentMachineNumber, out double w);
+                }
+            }
+            
+            
 
         }
 

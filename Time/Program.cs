@@ -14,12 +14,13 @@ namespace Time
         [STAThread]
         static void Main()
         {
-            
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             DB.GetConfsWithOrdinal();
             DB.GetListOfConfigurations();
             Application.Run(new Form1());
+
             
         }
     }
