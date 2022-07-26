@@ -17,8 +17,8 @@ namespace Time
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            DB.GetConfsWithOrdinal();
-            DB.GetListOfConfigurations();
+            //DB.GetConfsWithOrdinal();
+            //DB.GetListOfConfigurations();
             Application.Run(new Form1());
 
             

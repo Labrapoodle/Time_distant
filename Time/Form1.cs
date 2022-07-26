@@ -38,20 +38,14 @@ namespace Time
                     CurrentMachineNumber = machineBL.MachineN;
                     machineBL.Machine.SetNominal(nom);
                     label_main.Text = $"Машина №{machineBL.MachineN}";
-                    if (machineBL.Machine.GetPeriod().Count == 0)
-                    {
-                        //MessageBox.Show("Нет данных");
-                        
-                    }
-                    else
-                    {
+                    
                         
                         Plotting(machineBL.MachineN, out double _);
                         LabelColor(Machines);
                         AllEfficiency_Label(Machines);
                         chart1.Series[0].Enabled = true;
                         chart1.Series[1].Enabled = true;
-                    }
+                    
                     
                    
                 }
@@ -89,8 +83,9 @@ namespace Time
 
             chart1.ChartAreas[0].AxisX.Minimum = cm.Machine.CycleBegin.ToOADate();
             chart1.ChartAreas[0].AxisX.Maximum = cm.Machine.GetEndtDate().ToOADate();
-            chart1.ChartAreas[0].AxisY.Minimum = 10;
-            chart1.ChartAreas[0].AxisY.Maximum = 20;
+
+            
+            
             chart1.Series[1].Points.Clear();
             chart1.Series[0].Enabled = true;
             chart1.Series[1].Enabled = true;
@@ -98,20 +93,66 @@ namespace Time
 
             double nominal = cm.Machine.GetNominal();
             T = cm.Machine.GetPeriod();
+            if (T != null && T.Count != 0)
+            {
+                var p = T.Where(x => !(Double.IsNaN(x.Item2)));
+                chart1.ChartAreas[0].AxisY.Minimum = (p.Min(x=>x.Item2) > 10) ? 10 : (Math.Round(p.Min(x => x.Item2)) - 1);
+                chart1.ChartAreas[0].AxisY.Maximum = (p.Max(x=>x.Item2) < 18) ? 18 : (Math.Round(p.Max(x => x.Item2)) + 1);
+                /*double l = T.Min(x => x.Item2);                
+                if (!Double.IsNaN(l))
+                {
+                    if (l < 10)
+                    {
+                        chart1.ChartAreas[0].AxisY.Minimum = Math.Round(l)-1;
+                        
+                    }
+                    else
+                    {
+                        chart1.ChartAreas[0].AxisY.Minimum = 10;
+                    }
+                    
+                }
+                double h = T.Max(x => x.Item2);
+                if (!Double.IsNaN(h))
+                {
+                    if (h > 18)
+                    {
+                        chart1.ChartAreas[0].AxisY.Maximum = Math.Round(h) + 1;
+                    }
+                    else
+                    {
+                        chart1.ChartAreas[0].AxisY.Maximum = 18;
+                    }
+                    
+                }*/
+                
+            }
+            else 
+            {
+                chart1.ChartAreas[0].AxisY.Minimum = 10 ;
+                chart1.ChartAreas[0].AxisY.Maximum = 18;
+            }
+
+            
+
             double A = cm.Machine.AveragePeriod();
             w = Math.Round(2 - A / nominal, 2);
             int ondex =0;
-            if(cm.Machine.CycleBegin > T[0].Item1)
+            if(T!=null && T.Count != 0)
             {
-                chart1.ChartAreas[0].AxisX.Maximum = DateTime.Now.Date.AddDays(1).ToOADate();
-                chart1.ChartAreas[0].AxisX.Minimum = DateTime.Now.Date.AddDays(-4).ToOADate();
-                /*if (T.FindIndex(c => c.Item1 >= cm.Machine.CycleBegin) == -1)
+                if (cm.Machine.CycleBegin > T[0].Item1)
                 {
-                    MessageBox.Show("Начало пятидневки позже времнени изменения заказа, но с начала пятидневки нет данных");
-                    return;
-                }*/
-                ondex = T.FindIndex(c => c.Item1 >= DateTime.Now.AddDays(-5));
+                    chart1.ChartAreas[0].AxisX.Maximum = DateTime.Now.Date.AddDays(1).ToOADate();
+                    chart1.ChartAreas[0].AxisX.Minimum = DateTime.Now.Date.AddDays(-4).ToOADate();
+                    /*if (T.FindIndex(c => c.Item1 >= cm.Machine.CycleBegin) == -1)
+                    {
+                        MessageBox.Show("Начало пятидневки позже времнени изменения заказа, но с начала пятидневки нет данных");
+                        return;
+                    }*/
+                    ondex = T.FindIndex(c => c.Item1 >= DateTime.Now.AddDays(-5));
+                }
             }
+            
             
             
 
@@ -132,21 +173,38 @@ namespace Time
 
 
 
-            label_Mean_Period.Text = $"Среднее время цикла за период - {Math.Round(A, 2)} сек";            
+                        
 
             if (cm.Machine.GetNominal() == 0)
-            {                         
-                label_Nominal.Text = $"Номинальное время цикла -  Не указано ";
-                label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - Не удалось вычислить";                
+            {
+                
+                    
+                
+                                
+            }
+            else if (cm.Machine.GetNominal() > 20)
+            {
+                label_Nominal.Text = $"Номинальное время цикла - указано слишком большое значение ({cm.Machine.GetNominal()}), введите величину меньше чем {chart1.ChartAreas[0].AxisY.Maximum} ";
+                label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - Не удалось вычислить";
             }
             else
             {
+                label_Mean_Period.Text = $"Среднее время цикла за период - {Math.Round(A, 2)} сек";
                 label_Nominal.Text = $"Номинальное время цикла - {Math.Round(nominal, 2)} сек";
-                label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - {100 * w}%";
+
+                if (cm.Machine.AveragePeriod() == 0)
+                {
+                    label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - Нет смысла считать, т.к. средний период = 0 ";
+                }
+                else
+                {                    
+                    label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - {100 * w}%";
+                }
+                
             }
             chart1.ChartAreas[0].AxisX.CustomLabels.Add(1, System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Days, chart1.ChartAreas[0].AxisX.Minimum, chart1.ChartAreas[0].AxisX.Maximum, "dd-MM-yyyy", 1, System.Windows.Forms.DataVisualization.Charting.LabelMarkStyle.SideMark);
 
-
+            
         }
 
 
@@ -158,9 +216,11 @@ namespace Time
 
             for (int q = 0; q < HighestWorkingMachineNumber - 1; q++)
             {
-                if (O[q].Machine.GetNominal() != 0 && O[q].Machine.AveragePeriod() != 0)
+                O[q].SelectButton.Enabled = (Math.Abs((O[q].Machine.GetEndtDate() - DateTime.Now.Date).Days) <= 5);
+                
+                if (  O[q].Machine.GetNominal() != 0 && O[q].Machine.AveragePeriod() != 0 )
                 {
-                    O[q].SelectButton.Enabled = true;
+                    
                     w = 2 - O[q].Machine.AveragePeriod() / O[q].Machine.GetNominal();
                     if (w >= 0.95) O[q].SelectButton.BackColor = Color.Green;
                     else if (w < 0.9) O[q].SelectButton.BackColor = Color.Red;
@@ -169,6 +229,8 @@ namespace Time
                     if (w > 1) O[q].EfficiencyLabel.Text = Math.Round(100 * w).ToString() + "%";
                     else O[q].EfficiencyLabel.Text = $" {Math.Round(100 * w)} %";
 
+                    ;
+
 
                     w = 0;
 
@@ -176,9 +238,12 @@ namespace Time
                 else
                 {                     
                     O[q].SelectButton.BackColor = DefaultBackColor;
-                    O[q].SelectButton.Enabled = false;
+                    
+                    
+                    
                 }
-
+                
+                
             }
         }
 
@@ -302,10 +367,9 @@ namespace Time
                 DateTime Start = Machines[CurrentMachineNumber - 2].Machine.CycleBegin;
                 DateTime Change = Machines[CurrentMachineNumber - 2].Machine.GetPeriod()[0].Item1;
 
-                if (Start >= Change && Machines[CurrentMachineNumber - 2].Machine.GetPeriod().FindIndex(c => c.Item1 > Start) != -1)
-                {
+                
                     Plotting(CurrentMachineNumber, out double w);
-                }
+                
             }
             
             
@@ -317,10 +381,14 @@ namespace Time
             
             Form2 newForm = new Form2();
             newForm.Show();
+            Call_Second_Form.Enabled = false;
         }
-
+        public  void KK()
+        {
+            Call_Second_Form.Enabled = true;
+        }
         
     }
-
+    
 
 }

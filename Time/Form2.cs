@@ -13,15 +13,15 @@ namespace Time
 {
     public partial class Form2 : Form
     {
-
+        List<Configuration> Table;
 
         public Form2()
         {
             InitializeComponent();
 
-            
 
-            var bindingList = new BindingList<Configuration>(DB.Table);
+            Table = DB.GetListOfConfigurations();
+            var bindingList = new BindingList<Configuration>(Table);
             var source = new BindingSource(bindingList, null);
             dataGridView1.DataSource = source;
             dataGridView1.Columns[0].HeaderText = "Горло";
@@ -45,8 +45,8 @@ namespace Time
 
         /*private void Form2_FormClosed(object sender, FormClosedEventArgs e)
         {
-
-            DB.ReturnGrid();
+            Form1.KK();
+            
         }*/
 
         void Form2_Shown()
@@ -64,7 +64,7 @@ namespace Time
                 connection.Open();
                 using (SqlCommand command17 = new SqlCommand("Update_Configuration_Nominal"))
                 {
-                    var t = DB.Table[e.RowIndex];
+                    var t = Table[e.RowIndex];// DB.Table[e.RowIndex];
                     command17.Connection = connection;
                     command17.CommandType = System.Data.CommandType.StoredProcedure;
                     command17.Parameters.Add("@NECK", System.Data.SqlDbType.NVarChar).Value = t.NCK;

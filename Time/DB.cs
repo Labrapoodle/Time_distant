@@ -8,21 +8,22 @@ namespace Time
 {
     public class DB
     {
-        public static List<Configuration> Table = new List<Configuration>();
-        public static List<ConfigurationWithMachineN> TableWithOrdinals = new List<ConfigurationWithMachineN>();
+        //public static List<Configuration> Table = new List<Configuration>();
+        //public static List<ConfigurationWithMachineN> TableWithOrdinals = new List<ConfigurationWithMachineN>();
         static int N = 120;
-
-        public static void GetListOfConfigurations()
+        static string connectionStringPlanning = "Server=192.168.0.12;Database=Planning;Password=DbSyS@dm1n;User ID=sa";
+        static string connectionStringPetPro = "Server=192.168.0.12;Database=PetPro;Password=DbSyS@dm1n;User ID=sa";
+        public static List<Configuration> GetListOfConfigurations()
         {
 
             //Table.Clear();
 
+            List<Configuration> Table = new List<Configuration>();
+
+            //string connectionString = "Server=192.168.0.12;Database=PetPro;Password=DbSyS@dm1n;User ID=sa";
 
 
-            string connectionString = "Server=192.168.0.12;Database=PetPro;Password=DbSyS@dm1n;User ID=sa";
-
-
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(connectionStringPetPro))
             {
                 connection.Open();
                 using (SqlCommand command1 = new SqlCommand())
@@ -44,25 +45,26 @@ namespace Time
                         }
                     }
                 } //получение информации для таблицы, в которую пользователь заносит номинальное время                 
-
+                
             }
-
+            return Table;
 
 
         }
-        public static void GetConfsWithOrdinal()
+        public static List<ConfigurationWithMachineN> GetConfsWithOrdinal(int MachineN)
         {
             //TableWithOrdinals.Clear();
-            string connectionString = "Server=192.168.0.12;Database=Planning;Password=DbSyS@dm1n;User ID=sa";
-           
+            //string connectionString = "Server=192.168.0.12;Database=Planning;Password=DbSyS@dm1n;User ID=sa";
 
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            List<ConfigurationWithMachineN> TableWithOrdinals = new List<ConfigurationWithMachineN>();
+            using (SqlConnection connection = new SqlConnection(connectionStringPlanning))
             {
                 connection.Open();
                 using (SqlCommand command2 = new SqlCommand())
                 {
-                    command2.CommandText = "SELECT DISTINCT Sets.neck,Sets.weight,Sets.matrix,planOrders.startDate,planOrders.endDate,planOrders.petLine FROM Sets LEFT JOIN planOrders ON (Sets.neck=planOrders.neck AND Sets.weight=planOrders.weight AND Sets.matrix=planOrders.matrix) WHERE GETDATE() BETWEEN startDate AND endDAte";
+                    command2.CommandText = "SELECT DISTINCT Sets.neck,Sets.weight,Sets.matrix,planOrders.startDate,planOrders.endDate,planOrders.petLine FROM Sets LEFT JOIN planOrders ON (Sets.neck=planOrders.neck AND Sets.weight=planOrders.weight AND Sets.matrix=planOrders.matrix) WHERE GETDATE() BETWEEN startDate AND endDAte And Petline=@petline";
                     command2.Connection = connection;
+                    command2.Parameters.AddWithValue("@petline", "PETLINE"+MachineN.ToString("D2"));
                     SqlDataReader reader = command2.ExecuteReader();
 
                     if (reader.HasRows)
@@ -81,14 +83,15 @@ namespace Time
                     }
                 }
             }
+            return TableWithOrdinals;
         }
        
 
         public static List<(DateTime,double)> GetCycleIntervals_Start(int N)
         {
             List<(DateTime, double)> L = new List<(DateTime, double)>();
-            string connectionString = "Server=192.168.0.12;Database=PetPro;Password=DbSyS@dm1n;User ID=sa";
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            //string connectionString = "Server=192.168.0.12;Database=PetPro;Password=DbSyS@dm1n;User ID=sa";
+            using (SqlConnection connection = new SqlConnection(connectionStringPetPro))
             {
                 connection.Open();
                 using (SqlCommand command = new SqlCommand())
@@ -114,7 +117,7 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
                       select l.Item2;
             return tmp.ToList();*/
             //return L.Select(l=>l.Item2).ToList();
-            var O = new List<(DateTime, double)>();
+            /*var O = new List<(DateTime, double)>();
             for (int j= 1; j < L.Count-1; j++)
             {
                 //сохранение значений Double.Nan на места, где предпологается, что машина останавливалась
@@ -133,20 +136,24 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
                 int index = L.IndexOf((O[k].Item1, O[k].Item2));
                 L.Insert(index+1, (O[k].Item1.AddHours(1), Double.NaN));
 
-            }
+            }*/
             List<(DateTime, double)> OnlyHours = new List<(DateTime, double)>();
             if (L.Count != 0)
             {
                 OnlyHours.Add(L[0]);
                 foreach ((DateTime, double) h in L)
                 {
-                    if ((h.Item1 - OnlyHours.Last().Item1).TotalMinutes >= 50 || (h.Item1 - OnlyHours.Last().Item1).TotalMinutes <= 70)
+                    if ((h.Item1 - OnlyHours.Last().Item1).TotalMinutes >= 50 && (h.Item1 - OnlyHours.Last().Item1).TotalMinutes <= 70)
                     {
                         if (!OnlyHours.Exists(x=>x==h))
                         {
                             OnlyHours.Add(h);
-                        }
-                        
+                        }                        
+                    }
+                    else if ((h.Item1 - OnlyHours.Last().Item1).TotalMinutes >= 90)
+                    {
+                        OnlyHours.Add((OnlyHours.Last().Item1.AddHours(1),Double.NaN));
+                        OnlyHours.Add(h);
                     }
                 }
                 return OnlyHours;
@@ -178,28 +185,54 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
             string RDneck ="" ;
             double RDweight=0.1F;
             int RDmatrix=1;
+            double cycle_time = 10;
             
-            string connectionString = "Server=192.168.0.12;Database=Planning;Password=DbSyS@dm1n;User ID=sa";
-            using (SqlConnection connection = new SqlConnection(connectionString))
+
+            using (SqlConnection connection = new SqlConnection(connectionStringPlanning))
             {
                 connection.Open();
                 using (SqlCommand command = new SqlCommand())
                 {
-                    command.CommandText = @"SELECT DISTINCT Sets.neck,Sets.weight,Sets.matrix,planOrders.startDate,planOrders.endDate,planOrders.petLine "+
-                        "FROM Sets LEFT JOIN planOrders ON (Sets.neck=planOrders.neck AND Sets.weight=planOrders.weight AND Sets.matrix=planOrders.matrix)"+
+                    command.CommandText = @"SELECT DISTINCT Sets.neck,Sets.weight,Sets.matrix,planOrders.startDate,planOrders.endDate,planOrders.petLine " +
+                        "FROM Sets LEFT JOIN planOrders ON (Sets.neck=planOrders.neck AND Sets.weight=planOrders.weight AND Sets.matrix=planOrders.matrix)" +
                         "WHERE (GETDATE() BETWEEN startDate AND endDAte) AND (petLine = @LineNumber)";
                     command.Connection = connection;
-                    command.Parameters.Add("LineNumber", System.Data.SqlDbType.NVarChar).Value = "PETLINE"+MachineN.ToString("D2");
-                    SqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleRow);
-                    if (reader.Read())
+                    command.Parameters.Add("LineNumber", System.Data.SqlDbType.NVarChar).Value = "PETLINE" + MachineN.ToString("D2");
+                    //command.Parameters.AddWithValue("LineNumber", "PETLINE" + MachineN.ToString("D2"));
+                    using (SqlDataReader reader = command.ExecuteReader(System.Data.CommandBehavior.SingleRow))
                     {
-                        RDneck = reader.GetString(0);
-                        RDweight = Convert.ToDouble(reader.GetValue(1));
-                        RDmatrix = Convert.ToInt32(reader.GetString(2));
+                        if (reader.Read())
+                        {
+                            RDneck = reader.GetString(0);
+                            RDweight = Convert.ToDouble(reader.GetValue(1));
+                            RDmatrix = Convert.ToInt32(reader.GetString(2));
+                        }
                     }
 
                 }
-                var x = Table.Find(c => c.NCK == RDneck && c.WGHT == RDweight && c.MTX == RDmatrix);
+                connection.Close();
+            }
+            using (SqlConnection connection = new SqlConnection(connectionStringPetPro))
+            { 
+                connection.Open();
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.CommandText = @"SELECT Nominal_Period FROM Configuration_Nominal where neck=@neck and matrix=@matrix and [weight] =@weight";
+                    command.Connection = connection;
+                    command.Parameters.AddWithValue("@neck",RDneck);
+                    command.Parameters.AddWithValue("@matrix", RDmatrix);
+                    command.Parameters.AddWithValue("@weight", RDweight);
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            cycle_time = reader.IsDBNull(0) ? 10 : reader.GetDouble(0);
+                        }
+                    }
+
+                }
+                return cycle_time;               
+/*                var x = cycle_time;//Table.Find(c => c.NCK == RDneck && c.WGHT == RDweight && c.MTX == RDmatrix);
                 if (x == null)
                 {
                     //MessageBox.Show("DB,179");
@@ -207,8 +240,8 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
                 }
                 else
                 {
-                    return x.Nominal_Cycle_Period;
-                }
+                    return x;
+                }*/
             }
 
             /*    var q = TableWithOrdinals.Find(p => p.ordinal == MachineN);
@@ -243,7 +276,9 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
         
         public static DateTime LoadStartDate(int MachineN)
         {
-            var q = TableWithOrdinals.Find(p => p.ordinal == MachineN);
+            var TableWithOrdinals = GetConfsWithOrdinal(MachineN);
+            //var q = TableWithOrdinals.Find(p => p.ordinal == MachineN);
+            var q = TableWithOrdinals.FirstOrDefault();
             if (q == null)
             {
                 DateTime d = new DateTime(2001, 11, 09);
