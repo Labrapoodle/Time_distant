@@ -78,16 +78,16 @@ namespace Time
 
                 if (StartD_ >= T_[0].Item1)
                 {
-                    if (!T_.Any(x => x.Item1.Date == DateTime.Now.AddDays(-1).Date))
+                    if (!T_.Any(x => x.Item1.Date == DateTime.Now.Date))
                     {
-                        T_.Add((DateTime.Now.Date.AddHours(-1),Double.NaN));
+                        T_.Add((DateTime.Now.AddDays(1).Date,Double.NaN));
                     }
-                    if(!T_.Any(x=>x.Item1 == DateTime.Now.AddDays(-4).Date))
+                    if(!T_.Any(x=>x.Item1.Date == DateTime.Now.AddDays(-4).Date))
                     {
                         T_.Insert(0, (DateTime.Now.AddDays(-4).Date, Double.NaN));
                     }
                     StartNdex = T_.FindIndex(x => x.Item1 >= DateTime.Now.Date.AddDays(-4));
-                    EndNdex = T_.FindIndex(x => x.Item1 >= DateTime.Now.AddDays(1));
+                    EndNdex = T_.FindIndex(x => x.Item1 >= DateTime.Now.AddDays(1).Date);
                 }
 
                 else

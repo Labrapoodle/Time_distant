@@ -40,11 +40,12 @@ namespace Time
                     label_main.Text = $"Машина №{machineBL.MachineN}";
                     if (machineBL.Machine.GetPeriod().Count == 0)
                     {
-                        MessageBox.Show("Нет данных");
+                        //MessageBox.Show("Нет данных");
                         
                     }
                     else
                     {
+                        
                         Plotting(machineBL.MachineN, out double _);
                         LabelColor(Machines);
                         AllEfficiency_Label(Machines);
@@ -159,6 +160,7 @@ namespace Time
             {
                 if (O[q].Machine.GetNominal() != 0 && O[q].Machine.AveragePeriod() != 0)
                 {
+                    O[q].SelectButton.Enabled = true;
                     w = 2 - O[q].Machine.AveragePeriod() / O[q].Machine.GetNominal();
                     if (w >= 0.95) O[q].SelectButton.BackColor = Color.Green;
                     else if (w < 0.9) O[q].SelectButton.BackColor = Color.Red;
@@ -174,6 +176,7 @@ namespace Time
                 else
                 {                     
                     O[q].SelectButton.BackColor = DefaultBackColor;
+                    O[q].SelectButton.Enabled = false;
                 }
 
             }
@@ -280,9 +283,12 @@ namespace Time
         {
             foreach (MachineButtonLabel Mac in Machines)
             {
-                Mac.Machine.SetPeriod(DB.GetCycleIntervals_Start(Mac.MachineN));
-                Mac.Machine.SetNominal(DB.LoadNominal(Mac.MachineN));
-                Mac.Machine.CycleBegin = DB.LoadStartDate(Mac.MachineN);
+                var period = DB.GetCycleIntervals_Start(Mac.MachineN);
+                var mominal = DB.LoadNominal(Mac.MachineN);
+                var STD = DB.LoadStartDate(Mac.MachineN);
+                Mac.Machine.SetPeriod(period);
+                Mac.Machine.SetNominal(mominal);
+                Mac.Machine.CycleBegin = STD;
                 //Mac.Machine.SetEndtDate(DB.LoadEndDate(Mac.MachineN));
             }
             LabelColor(Machines);

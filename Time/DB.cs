@@ -117,8 +117,8 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
             var O = new List<(DateTime, double)>();
             for (int j= 1; j < L.Count-1; j++)
             {
-                
-                if ((L[j].Item1 - L[j - 1].Item1).TotalHours > 2)
+                //сохранение значений Double.Nan на места, где предпологается, что машина останавливалась
+                if ((L[j].Item1 - L[j - 1].Item1).TotalHours > 1.5) 
                 {
                     //int index = L.IndexOf((L[j-1].Item1,L[j-1].Item2));
                     O.Add((L[j - 1].Item1, L[j - 1].Item2));
@@ -127,14 +127,37 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
 
                 }
             }
+            //вставка в возвращаемый список значений, найденных в цикле выше
             for(int k = 0; k < O.Count; k++)
             {
                 int index = L.IndexOf((O[k].Item1, O[k].Item2));
                 L.Insert(index+1, (O[k].Item1.AddHours(1), Double.NaN));
 
             }
-
-            return L;
+            List<(DateTime, double)> OnlyHours = new List<(DateTime, double)>();
+            if (L.Count != 0)
+            {
+                OnlyHours.Add(L[0]);
+                foreach ((DateTime, double) h in L)
+                {
+                    if ((h.Item1 - OnlyHours.Last().Item1).TotalMinutes >= 50 || (h.Item1 - OnlyHours.Last().Item1).TotalMinutes <= 70)
+                    {
+                        if (!OnlyHours.Exists(x=>x==h))
+                        {
+                            OnlyHours.Add(h);
+                        }
+                        
+                    }
+                }
+                return OnlyHours;
+            }
+            else
+            {
+                return L;
+            }
+            
+            
+            
         }
         /*public static List<double> RandomPeriod(int MachineN)
         {
