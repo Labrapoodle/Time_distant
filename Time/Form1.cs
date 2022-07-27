@@ -15,21 +15,26 @@ namespace Time
 
     public partial class Form1 : Form
     {
+        
         // !!Machines[0] соответствует второй машине!! (, а Machines[12] — 14, т.е. сдвиг на два)
-        static List<MachineButtonLabel> Machines = new List<MachineButtonLabel>(); 
-        static int HighestWorkingMachineNumber = 14;
-        static int CurrentMachineNumber=2;
+        List<MachineButtonLabel> Machines = new List<MachineButtonLabel>(); 
+        int HighestWorkingMachineNumber = 14;
+        int CurrentMachineNumber=15;
+        Form2 newForm = new Form2();
         public Form1()
         {
 
-
+            
             InitializeComponent();
+            this.DoubleBuffered = true;
+            
+
             Shown += Form1_Shown;
            
 
             for (int i = 2; i <= HighestWorkingMachineNumber; i++)
             {
-                Machines.Add(new MachineButtonLabel(this, i, new Point(MachineButtonLabel.FirstIndentX + (i - 2) * (MachineButtonLabel.ButtonWidth + ((902 - 2 * MachineButtonLabel.FirstIndentX - (HighestWorkingMachineNumber - 1) * MachineButtonLabel.ButtonWidth) / (HighestWorkingMachineNumber - 2))), 46),
+                Machines.Add(new MachineButtonLabel(this, i, new Point(MachineButtonLabel.FirstIndentX + (i - 2) * (MachineButtonLabel.ButtonWidth + ((this.Width-20 - 2 * MachineButtonLabel.FirstIndentX - (HighestWorkingMachineNumber - 1) * MachineButtonLabel.ButtonWidth) / (HighestWorkingMachineNumber - 2))), chart1.Location.Y-49),
                     (machineBL) =>
                 {
                     var nom = DB.LoadNominal(machineBL.MachineN);
@@ -184,7 +189,7 @@ namespace Time
             }
             else if (cm.Machine.GetNominal() > 20)
             {
-                label_Nominal.Text = $"Номинальное время цикла - указано слишком большое значение ({cm.Machine.GetNominal()}), введите величину меньше чем {chart1.ChartAreas[0].AxisY.Maximum} ";
+                label_Nominal.Text = $"Номинальное время цикла - указано слишком большое значение ({cm.Machine.GetNominal()}), введите величину меньше {chart1.ChartAreas[0].AxisY.Maximum} ";
                 label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - Не удалось вычислить";
             }
             else
@@ -194,7 +199,7 @@ namespace Time
 
                 if (cm.Machine.AveragePeriod() == 0)
                 {
-                    label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - Нет смысла считать, т.к. средний период = 0 ";
+                    label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - Бессмысленна, т.к. средний период = 0 ";
                 }
                 else
                 {                    
@@ -203,7 +208,9 @@ namespace Time
                 
             }
             chart1.ChartAreas[0].AxisX.CustomLabels.Add(1, System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Days, chart1.ChartAreas[0].AxisX.Minimum, chart1.ChartAreas[0].AxisX.Maximum, "dd-MM-yyyy", 1, System.Windows.Forms.DataVisualization.Charting.LabelMarkStyle.SideMark);
-
+            var g = DB.GetConfsWithOrdinal(CurrentMachineNumber);
+            label_Current_Configuration.Show();
+            label_Current_Configuration.Text = $" Горло {g[0].NCK}, Матрица {g[0].MTX}, Вес {g[0].WGHT}";
             
         }
 
@@ -226,7 +233,7 @@ namespace Time
                     else if (w < 0.9) O[q].SelectButton.BackColor = Color.Red;
                     else O[q].SelectButton.BackColor = Color.Yellow;
                     O[q].EfficiencyLabel.Show();
-                    if (w > 1) O[q].EfficiencyLabel.Text = Math.Round(100 * w).ToString() + "%";
+                    if (Math.Round(100 * w) >= 100) O[q].EfficiencyLabel.Text = Math.Round(100 * w).ToString() + "%";
                     else O[q].EfficiencyLabel.Text = $" {Math.Round(100 * w)} %";
 
                     ;
@@ -304,13 +311,13 @@ namespace Time
                 SelectButton.MouseLeave += (s, e) => SelectButton.Cursor = Cursors.Arrow;
                 SelectButton.Size = new Size(ButtonWidth, ButtonHeight);
                 SelectButton.Click += (o, e) => { Onclick.Invoke(this); };
-
+                //SelectButton.Anchor = (AnchorStyles.Top | AnchorStyles.Right);
 
 
                 EfficiencyLabel = new Label();
                 EfficiencyLabel.AutoSize = true;
 
-                EfficiencyLabel.Location = new Point(TopLeft.X, TopLeft.Y + ButtonHeight + IndentY);
+                EfficiencyLabel.Location = new Point(TopLeft.X-1, TopLeft.Y + ButtonHeight + IndentY);
                 
                 form.Controls.Add(SelectButton);
                 form.Controls.Add(EfficiencyLabel);
@@ -362,7 +369,7 @@ namespace Time
         private void timer1_Tick(object sender, EventArgs e)
         {
             Refreshing(Machines);
-            if(Machines[CurrentMachineNumber - 2].Machine.GetPeriod().Count != 0)
+            if(CurrentMachineNumber <= 14 && CurrentMachineNumber >= 2 && Machines[CurrentMachineNumber - 2].Machine.GetPeriod().Count != 0  )
             {
                 DateTime Start = Machines[CurrentMachineNumber - 2].Machine.CycleBegin;
                 DateTime Change = Machines[CurrentMachineNumber - 2].Machine.GetPeriod()[0].Item1;
@@ -378,17 +385,33 @@ namespace Time
 
         private void Call_Second_Form_Click(object sender, EventArgs e)
         {
+            if (!newForm.Visible)
+            {
+                newForm.Show();
+            }
             
-            Form2 newForm = new Form2();
-            newForm.Show();
-            Call_Second_Form.Enabled = false;
+            
         }
-        public  void KK()
+
+        private void Form1_Resize(object sender, EventArgs e)
         {
-            Call_Second_Form.Enabled = true;
+            for (int i = 2; i <= HighestWorkingMachineNumber;i++)
+            {
+                Machines[i-2].SelectButton.Location = new Point(MachineButtonLabel.FirstIndentX + (i - 2) * (MachineButtonLabel.ButtonWidth + ((this.Width - 20 - 2 * MachineButtonLabel.FirstIndentX - (HighestWorkingMachineNumber - 1) * MachineButtonLabel.ButtonWidth) / (HighestWorkingMachineNumber - 2))), chart1.Location.Y - 49);
+                Machines[i - 2].EfficiencyLabel.Location = new Point(Machines[i - 2].SelectButton.Location.X-1, Machines[i - 2].SelectButton.Location.Y+MachineButtonLabel.ButtonHeight+MachineButtonLabel.IndentY);
+                
+            }
         }
+
         
     }
-    
+    /*
+    USE PetPro
+    GO
 
+    SELECT C.neck,C.[weight],C.matrix FROM Planning.dbo.Sets as S Right Join PetPro.[dbo].Configuration_Nominal as C ON 
+	    (CAST(S.matrix AS int)=C.matrix	and S.neck=C.neck and CAST(REPLACE(S.[weight],',','.') AS float)=C.[weight])
+	    WHERE (S.matrix = null or S.[weight]=null or S.neck = null or S.neck='') 
+    GO
+    */
 }

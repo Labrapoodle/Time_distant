@@ -18,29 +18,14 @@ namespace Time
         public Form2()
         {
             InitializeComponent();
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
 
+            UpdateGrid();
 
-            Table = DB.GetListOfConfigurations();
-            var bindingList = new BindingList<Configuration>(Table);
-            var source = new BindingSource(bindingList, null);
-            dataGridView1.DataSource = source;
-            dataGridView1.Columns[0].HeaderText = "Горло";
-            
-            dataGridView1.Columns[0].ReadOnly = true;
-            dataGridView1.Columns[1].HeaderText = "Кол-во гнёзд";
-            dataGridView1.Columns[1].ReadOnly = true;
-            dataGridView1.Columns[2].HeaderText = "Вес";
-            dataGridView1.Columns[2].ReadOnly = true;
-            dataGridView1.Columns[3].HeaderText = "Время цикла";
-            foreach (DataGridViewColumn item in dataGridView1.Columns)
-            {
-                item.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                item.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                item.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            }
             //this.FormClosed += new FormClosingEventHandler(this.Form2_Close());
             //FormClosed += Form2_FormClosed;
-            
+
         }
 
         /*private void Form2_FormClosed(object sender, FormClosedEventArgs e)
@@ -74,6 +59,75 @@ namespace Time
                     command17.ExecuteNonQuery();
                 }
             }
+        }
+
+
+
+        private void Form2_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                Hide();
+                e.Cancel = true;
+            }
+        }
+
+        private void Form2_VisibleChanged(object sender, EventArgs e)
+        {
+            if (this.Visible)
+            {
+                UpdateGrid();
+            }
+            
+        }
+
+        private void UpdateGrid()
+        {
+            Table = DB.GetListOfConfigurations();
+            var bindingList = new BindingList<Configuration>(Table);
+            var source = new BindingSource(bindingList, null);
+            dataGridView1.DataSource = source;
+            dataGridView1.Columns[0].HeaderText = "Горло";
+
+            dataGridView1.Columns[0].ReadOnly = true;
+            dataGridView1.Columns[1].HeaderText = "Кол-во гнёзд";
+            dataGridView1.Columns[1].ReadOnly = true;
+            dataGridView1.Columns[2].HeaderText = "Вес";
+            dataGridView1.Columns[2].ReadOnly = true;
+            dataGridView1.Columns[3].HeaderText = "Время цикла";
+            foreach (DataGridViewColumn item in dataGridView1.Columns)
+            {
+                item.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                item.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                item.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            }
+            dataGridView1.EndEdit();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            UpdateGrid();
+        }
+
+        private void dataGridView1_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+        {
+            if(e.ColumnIndex == 3)
+            {
+                if (!Double.TryParse(e.FormattedValue.ToString(), out _))
+                {
+                    if (e.FormattedValue.ToString().IndexOf(".") != -1)
+                    {
+                        MessageBox.Show("В введённом значении не должно быть точек, только цифры и/или запятая ");
+                        e.Cancel = true;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Введенное значение не является числом");
+                        e.Cancel = true;
+                    }
+                }
+            }
+            
         }
     }
 }

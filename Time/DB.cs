@@ -26,6 +26,12 @@ namespace Time
             using (SqlConnection connection = new SqlConnection(connectionStringPetPro))
             {
                 connection.Open();
+                using (SqlCommand command3 = new SqlCommand())
+                {
+                    command3.Connection = connection;
+                    command3.CommandText = "EXEC PetPro.[dbo].Upd_ConfNomin_From_Sets";
+                    command3.ExecuteNonQuery();
+                }
                 using (SqlCommand command1 = new SqlCommand())
                 {
                     command1.CommandText = "SELECT * FROM Configuration_Nominal ORDER BY neck,matrix DESC,[weight] DESC";
