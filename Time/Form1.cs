@@ -34,7 +34,7 @@ namespace Time
 
             for (int i = 2; i <= HighestWorkingMachineNumber; i++)
             {
-                Machines.Add(new MachineButtonLabel(this, i, new Point(MachineButtonLabel.FirstIndentX + (i - 2) * (MachineButtonLabel.ButtonWidth + ((this.Width-20 - 2 * MachineButtonLabel.FirstIndentX - (HighestWorkingMachineNumber - 1) * MachineButtonLabel.ButtonWidth) / (HighestWorkingMachineNumber - 2))), chart1.Location.Y-49),
+                Machines.Add(new MachineButtonLabel(this, i, new Point(MachineButtonLabel.FirstIndentX + (i - 2) * (MachineButtonLabel.ButtonWidth + ((this.Width-20 - 2 * MachineButtonLabel.FirstIndentX - (HighestWorkingMachineNumber - 1) * MachineButtonLabel.ButtonWidth) / (HighestWorkingMachineNumber - 2))), chart1.Location.Y-120),
                     (machineBL) =>
                 {
                     var nom = DB.LoadNominal(machineBL.MachineN);
@@ -42,6 +42,7 @@ namespace Time
                     machineBL.Machine.SetPeriod(t);
                     CurrentMachineNumber = machineBL.MachineN;
                     machineBL.Machine.SetNominal(nom);
+                    //MessageBox.Show($"{machineBL.SelectButton.Font.Name} {machineBL.SelectButton.Font.SystemFontName}");
                     label_main.Text = $"Машина №{machineBL.MachineN}";
                     
                         
@@ -79,11 +80,12 @@ namespace Time
 
             chart1.Series[0].Points.Clear();
             chart1.ChartAreas[0].AxisX.LabelStyle.Format = "HH:mm";
-            chart1.ChartAreas[0].AxisX.LabelStyle.Interval = 2;
+            chart1.ChartAreas[0].AxisX.LabelStyle.Interval = 4;
             //chart1.ChartAreas[0].AxisX.CustomLabels.Add(cm.Machine.GetStartDate().ToOADate(),cm.Machine.GetStartDate().AddDays(1).ToOADate(),cm.Machine.GetStartDate().ToString(),1,System.Windows.Forms.DataVisualization.Charting.LabelMarkStyle.LineSideMark );
             
             //chart1.ChartAreas[0].AxisX.Title = "Дата/Время";
             chart1.ChartAreas[0].AxisY.Title = "Время цикла, сек";
+            
 
 
             chart1.ChartAreas[0].AxisX.Minimum = cm.Machine.CycleBegin.ToOADate();
@@ -182,12 +184,13 @@ namespace Time
 
             if (cm.Machine.GetNominal() == 0)
             {
-                
-                    
-                
-                                
+                label_Nominal.Text = $"Номинальное время цикла - Не указано";
+                label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - Не удалось вычислить";
+                label_Mean_Period.Text = $"Среднее время цикла за период - {Math.Round(A, 2)} сек";
+
+
             }
-            else if (cm.Machine.GetNominal() > 20)
+            else if (cm.Machine.GetNominal() > chart1.ChartAreas[0].AxisY.Maximum)
             {
                 label_Nominal.Text = $"Номинальное время цикла - указано слишком большое значение ({cm.Machine.GetNominal()}), введите величину меньше {chart1.ChartAreas[0].AxisY.Maximum} ";
                 label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - Не удалось вычислить";
@@ -199,7 +202,7 @@ namespace Time
 
                 if (cm.Machine.AveragePeriod() == 0)
                 {
-                    label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - Бессмысленна, т.к. средний период = 0 ";
+                    label_Mean_Efficiency.Text = $"Средняя производительность по машине за период - Не удалось вычислить";
                 }
                 else
                 {                    
@@ -208,9 +211,10 @@ namespace Time
                 
             }
             chart1.ChartAreas[0].AxisX.CustomLabels.Add(1, System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Days, chart1.ChartAreas[0].AxisX.Minimum, chart1.ChartAreas[0].AxisX.Maximum, "dd-MM-yyyy", 1, System.Windows.Forms.DataVisualization.Charting.LabelMarkStyle.SideMark);
+            //chart1.ChartAreas[0].AxisX.CustomLabels[0]
             var g = DB.GetConfsWithOrdinal(CurrentMachineNumber);
             label_Current_Configuration.Show();
-            label_Current_Configuration.Text = $" Горло {g[0].NCK}, Матрица {g[0].MTX}, Вес {g[0].WGHT}";
+            label_Current_Configuration.Text = $" {g[0].WGHT} {g[0].NCK} {g[0].MTX} ";
             
         }
 
@@ -234,7 +238,7 @@ namespace Time
                     else O[q].SelectButton.BackColor = Color.Yellow;
                     O[q].EfficiencyLabel.Show();
                     if (Math.Round(100 * w) >= 100) O[q].EfficiencyLabel.Text = Math.Round(100 * w).ToString() + "%";
-                    else O[q].EfficiencyLabel.Text = $" {Math.Round(100 * w)} %";
+                    else O[q].EfficiencyLabel.Text = $" {Math.Round(100 * w)}%";
 
                     ;
 
@@ -245,7 +249,7 @@ namespace Time
                 else
                 {                     
                     O[q].SelectButton.BackColor = DefaultBackColor;
-                    
+                    O[q].EfficiencyLabel.Hide();
                     
                     
                 }
@@ -293,8 +297,8 @@ namespace Time
 
 
             public static int FirstIndentX = 21;
-            public static int ButtonWidth = 27;
-            public static int ButtonHeight = 23;
+            public static int ButtonWidth = 75;
+            public static int ButtonHeight = 65;
             public static int IndentX = 30;
             public static int IndentY = 7;
             private Form Parent;
@@ -309,6 +313,7 @@ namespace Time
                 SelectButton.Location = TopLeft;
                 SelectButton.MouseEnter += (s, e) => SelectButton.Cursor = Cursors.Hand;
                 SelectButton.MouseLeave += (s, e) => SelectButton.Cursor = Cursors.Arrow;
+                SelectButton.Font = new Font("Microsoft Sans Serif", 30);
                 SelectButton.Size = new Size(ButtonWidth, ButtonHeight);
                 SelectButton.Click += (o, e) => { Onclick.Invoke(this); };
                 //SelectButton.Anchor = (AnchorStyles.Top | AnchorStyles.Right);
@@ -317,8 +322,9 @@ namespace Time
                 EfficiencyLabel = new Label();
                 EfficiencyLabel.AutoSize = true;
 
-                EfficiencyLabel.Location = new Point(TopLeft.X-1, TopLeft.Y + ButtonHeight + IndentY);
-                
+                EfficiencyLabel.Location = new Point(TopLeft.X-10, TopLeft.Y + ButtonHeight + IndentY);
+                EfficiencyLabel.Font = new Font("Arial", 26, FontStyle.Regular);
+
                 form.Controls.Add(SelectButton);
                 form.Controls.Add(EfficiencyLabel);
                 Parent = form;
@@ -397,8 +403,8 @@ namespace Time
         {
             for (int i = 2; i <= HighestWorkingMachineNumber;i++)
             {
-                Machines[i-2].SelectButton.Location = new Point(MachineButtonLabel.FirstIndentX + (i - 2) * (MachineButtonLabel.ButtonWidth + ((this.Width - 20 - 2 * MachineButtonLabel.FirstIndentX - (HighestWorkingMachineNumber - 1) * MachineButtonLabel.ButtonWidth) / (HighestWorkingMachineNumber - 2))), chart1.Location.Y - 49);
-                Machines[i - 2].EfficiencyLabel.Location = new Point(Machines[i - 2].SelectButton.Location.X-1, Machines[i - 2].SelectButton.Location.Y+MachineButtonLabel.ButtonHeight+MachineButtonLabel.IndentY);
+                Machines[i-2].SelectButton.Location = new Point(MachineButtonLabel.FirstIndentX + (i - 2) * (MachineButtonLabel.ButtonWidth + ((this.Width - 20 - 2 * MachineButtonLabel.FirstIndentX - (HighestWorkingMachineNumber - 1) * MachineButtonLabel.ButtonWidth) / (HighestWorkingMachineNumber - 2))), chart1.Location.Y - 120);
+                Machines[i - 2].EfficiencyLabel.Location = new Point(Machines[i - 2].SelectButton.Location.X-10, Machines[i - 2].SelectButton.Location.Y+MachineButtonLabel.ButtonHeight+MachineButtonLabel.IndentY);
                 
             }
         }

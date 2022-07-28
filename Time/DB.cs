@@ -34,7 +34,7 @@ namespace Time
                 }
                 using (SqlCommand command1 = new SqlCommand())
                 {
-                    command1.CommandText = "SELECT * FROM Configuration_Nominal ORDER BY neck,matrix DESC,[weight] DESC";
+                    command1.CommandText = "SELECT * FROM Configuration_Nominal ORDER BY [weight] DESC, neck,matrix DESC";
                     command1.Connection = connection;
                     SqlDataReader reader = command1.ExecuteReader();
 
@@ -46,7 +46,8 @@ namespace Time
                             p.WGHT = Convert.ToDouble(reader.GetValue(1));
                             p.NCK = reader.GetString(0);
                             p.MTX = reader.GetInt32(2);
-                            p.Nominal_Cycle_Period = reader.GetDouble(3);
+                            p.Nominal_Cycle_Period = (reader.IsDBNull(3)) ? 0:reader.GetDouble(3) ;
+                            
                             Table.Add(p);
                         }
                     }
@@ -232,7 +233,7 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
                     {
                         if (reader.Read())
                         {
-                            cycle_time = reader.IsDBNull(0) ? 10 : reader.GetDouble(0);
+                            cycle_time = reader.IsDBNull(0) ? 0 : reader.GetDouble(0);
                         }
                     }
 
@@ -306,12 +307,21 @@ where Cycle_Photometer.date >= Time_Of_Changing_Orders.[date] and Cycle_Photomet
     }
     public class Configuration
     {
+        public double WGHT { get; set; }
         public string NCK { get; set; }
         public int MTX { get; set; }
-        public double WGHT { get; set; }        
         
-        public double Nominal_Cycle_Period { get; set; }
 
+        //public string Nominal_Cycle_Period { get; set; }
+        public double Nominal_Cycle_Period { get; set; }
+        public string Nominal_Cycle_Period_String { 
+            get { 
+                return Nominal_Cycle_Period==0?"":Nominal_Cycle_Period.ToString(); 
+            } 
+            set { 
+                if (double.TryParse(value, out double nt)) Nominal_Cycle_Period = nt; else Nominal_Cycle_Period = 0; 
+            }            
+        }
 
 
 

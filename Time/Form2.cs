@@ -43,22 +43,29 @@ namespace Time
 
         private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-            string connectionString = "Server=192.168.0.12;Database=PetPro;Password=DbSyS@dm1n;User ID=sa";
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-                using (SqlCommand command17 = new SqlCommand("Update_Configuration_Nominal"))
+            
+            
+
+                string connectionString = "Server=192.168.0.12;Database=PetPro;Password=DbSyS@dm1n;User ID=sa";
+                using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    var t = Table[e.RowIndex];// DB.Table[e.RowIndex];
-                    command17.Connection = connection;
-                    command17.CommandType = System.Data.CommandType.StoredProcedure;
-                    command17.Parameters.Add("@NECK", System.Data.SqlDbType.NVarChar).Value = t.NCK;
-                    command17.Parameters.Add("@WEIGHT", System.Data.SqlDbType.Float).Value = t.WGHT;
-                    command17.Parameters.Add("@MATRIX", System.Data.SqlDbType.Int).Value = t.MTX;
-                    command17.Parameters.Add("@NOMINAL", System.Data.SqlDbType.Float).Value = t.Nominal_Cycle_Period;
-                    command17.ExecuteNonQuery();
+                    connection.Open();
+                    using (SqlCommand command17 = new SqlCommand("Update_Configuration_Nominal"))
+                    {
+                        var t = Table[e.RowIndex];// DB.Table[e.RowIndex];
+                        command17.Connection = connection;
+                        command17.CommandType = System.Data.CommandType.StoredProcedure;
+                        command17.Parameters.Add("@NECK", System.Data.SqlDbType.NVarChar).Value = t.NCK;
+                        command17.Parameters.Add("@WEIGHT", System.Data.SqlDbType.Float).Value = t.WGHT;
+                        command17.Parameters.Add("@MATRIX", System.Data.SqlDbType.Int).Value = t.MTX;
+
+                        command17.Parameters.Add("@NOMINAL", System.Data.SqlDbType.Float).Value = t.Nominal_Cycle_Period;
+                        
+                        
+                        command17.ExecuteNonQuery();
+                    }
                 }
-            }
+            
         }
 
 
@@ -87,14 +94,15 @@ namespace Time
             var bindingList = new BindingList<Configuration>(Table);
             var source = new BindingSource(bindingList, null);
             dataGridView1.DataSource = source;
-            dataGridView1.Columns[0].HeaderText = "Горло";
+            dataGridView1.Columns[0].HeaderText = "Вес";
 
             dataGridView1.Columns[0].ReadOnly = true;
-            dataGridView1.Columns[1].HeaderText = "Кол-во гнёзд";
+            dataGridView1.Columns[1].HeaderText = "Горло";
             dataGridView1.Columns[1].ReadOnly = true;
-            dataGridView1.Columns[2].HeaderText = "Вес";
+            dataGridView1.Columns[2].HeaderText = "Кол-во гнёзд";
             dataGridView1.Columns[2].ReadOnly = true;
-            dataGridView1.Columns[3].HeaderText = "Время цикла";
+            dataGridView1.Columns[4].HeaderText = "Номинальное время цикла ";
+            dataGridView1.Columns[3].Visible = false;
             foreach (DataGridViewColumn item in dataGridView1.Columns)
             {
                 item.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
@@ -111,8 +119,10 @@ namespace Time
 
         private void dataGridView1_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
         {
-            if(e.ColumnIndex == 3)
+            
+            if(e.ColumnIndex == 4)
             {
+                
                 if (!Double.TryParse(e.FormattedValue.ToString(), out _))
                 {
                     if (e.FormattedValue.ToString().IndexOf(".") != -1)
@@ -120,11 +130,20 @@ namespace Time
                         MessageBox.Show("В введённом значении не должно быть точек, только цифры и/или запятая ");
                         e.Cancel = true;
                     }
+                    else if(e.FormattedValue.ToString() == "")
+                    {
+                        
+                    }
                     else
                     {
                         MessageBox.Show("Введенное значение не является числом");
                         e.Cancel = true;
                     }
+                }
+                else if(Double.Parse(e.FormattedValue.ToString())<=0)
+                {
+                    MessageBox.Show(" Введенное значение должно быть больше нуля");
+                    e.Cancel = true;
                 }
             }
             
